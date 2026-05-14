@@ -1,0 +1,428 @@
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import {
+  BookOpen,
+  Search,
+  ChevronDown,
+  ChevronRight,
+  Tag,
+  Bookmark,
+  BookmarkCheck,
+  Filter,
+} from 'lucide-react'
+import interviewData from '../data/interviewData'
+
+interface FavoriteItem {
+  id: number
+  item_id: string
+  question: string
+  category: string
+  note: string | null
+  created_at: string
+}
+
+export default function InterviewKnowledgeBase() {
+  const [activeCategory, setActiveCategory] = useState<string>('html-css')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([])
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
+  const [favLoading, setFavLoading] = useState(false)
+
+  // Load favorites from backend
+  const loadFavorites = useCallback(async () => {
+    try {
+      const res = await fetch('/api/interview/favorites')
+      const json = await res.json()
+      if (json.success && json.data) {
+        setFavorites(json.data)
+      }
+    } catch (err) {
+      console.error('加载收藏失败:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadFavorites()
+  }, [loadFavorites])
+
+  const isFavorited = useCallback(
+    (itemId: string) => favorites.some((f) => f.item_id === itemId),
+    [favorites]
+  )
+
+  const getFavoriteId = useCallback(
+    (itemId: string) => favorites.find((f) => f.item_id === itemId)?.id,
+    [favorites]
+  )
+
+  const toggleFavorite = useCallback(
+    async (item: { id: string; question: string }, categoryName: string) => {
+      if (favLoading) return
+      setFavLoading(true)
+      try {
+        if (isFavorited(item.id)) {
+          const favId = getFavoriteId(item.id)
+          if (favId) {
+            await fetch(`/api/interview/favorites/${favId}`, { method: 'DELETE' })
+          }
+        } else {
+          await fetch('/api/interview/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              item_id: item.id,
+              question: item.question,
+              category: categoryName,
+            }),
+          })
+        }
+        await loadFavorites()
+      } catch (err) {
+        console.error('收藏操作失败:', err)
+      } finally {
+        setFavLoading(false)
+      }
+    },
+    [favLoading, isFavorited, getFavoriteId, loadFavorites]
+  )
+
+  const toggleItem = useCallback((id: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
+  const filteredData = useMemo(() => {
+    let data = interviewData
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase()
+      data = interviewData
+        .map((cat) => ({
+          ...cat,
+          items: cat.items.filter(
+            (item) =>
+              item.question.toLowerCase().includes(q) ||
+              item.answer.toLowerCase().includes(q) ||
+              item.tags?.some((tag) => tag.toLowerCase().includes(q))
+          ),
+        }))
+        .filter((cat) => cat.items.length > 0)
+    }
+    if (showOnlyFavorites) {
+      const favIds = new Set(favorites.map((f) => f.item_id))
+      data = data
+        .map((cat) => ({
+          ...cat,
+          items: cat.items.filter((item) => favIds.has(item.id)),
+        }))
+        .filter((cat) => cat.items.length > 0)
+    }
+    return data
+  }, [searchQuery, showOnlyFavorites, favorites])
+
+  const activeCategoryData = useMemo(() => {
+    return filteredData.find((cat) => cat.id === activeCategory) || filteredData[0]
+  }, [filteredData, activeCategory])
+
+  // 搜索或切换只看收藏时，自动选中第一个有结果的分类
+  useEffect(() => {
+    if (activeCategoryData && activeCategoryData.id !== activeCategory) {
+      setActiveCategory(activeCategoryData.id)
+    }
+  }, [activeCategoryData, activeCategory])
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        padding: '100px 40px 60px',
+        maxWidth: 1400,
+        margin: '0 auto',
+      }}
+    >
+      {/* Header */}
+      <div style={{ marginBottom: 40 }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '8px 20px',
+            borderRadius: 20,
+            background: 'rgba(0, 212, 255, 0.1)',
+            border: '1px solid var(--border-glow)',
+            color: 'var(--accent-cyan)',
+            fontSize: 13,
+            fontWeight: 500,
+            marginBottom: 16,
+          }}
+        >
+          <BookOpen size={14} />
+          面试知识库
+        </div>
+        <h1 style={{ fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 700, marginBottom: 12 }}>
+          全栈面试<span className="gradient-text">知识汇总</span>
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 16, maxWidth: 600 }}>
+          覆盖前端核心知识点，从 HTML/CSS 到算法与数据结构，助你系统备战技术面试。
+        </p>
+      </div>
+
+      {/* Search & Filter */}
+      <div style={{ marginBottom: 32, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '12px 20px',
+            borderRadius: 12,
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            maxWidth: 500,
+            flex: 1,
+          }}
+        >
+          <Search size={18} color="var(--text-muted)" />
+          <input
+            type="text"
+            placeholder="搜索面试题、知识点或标签..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              color: 'var(--text-primary)',
+              fontSize: 15,
+              fontFamily: 'inherit',
+            }}
+          />
+        </div>
+
+        <button
+          onClick={() => setShowOnlyFavorites((v) => !v)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '12px 20px',
+            borderRadius: 12,
+            border: '1px solid var(--border-subtle)',
+            background: showOnlyFavorites ? 'rgba(0, 212, 255, 0.1)' : 'var(--bg-card)',
+            color: showOnlyFavorites ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            transition: 'all 0.2s',
+          }}
+        >
+          <Filter size={16} />
+          {showOnlyFavorites ? '显示全部' : `只看收藏 (${favorites.length})`}
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        {/* Sidebar Categories */}
+        <div
+          style={{
+            width: 220,
+            flexShrink: 0,
+            position: 'sticky',
+            top: 100,
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--bg-card)',
+              borderRadius: 16,
+              border: '1px solid var(--border-subtle)',
+              overflow: 'hidden',
+            }}
+          >
+            {filteredData.map((cat) => {
+              const isActive = activeCategory === cat.id
+              const count = cat.items.length
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 18px',
+                    border: 'none',
+                    borderBottom: '1px solid var(--border-subtle)',
+                    background: isActive ? 'rgba(0, 212, 255, 0.08)' : 'transparent',
+                    color: isActive ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'inherit',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
+                      e.currentTarget.style.color = 'var(--text-primary)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = 'var(--text-secondary)'
+                    }
+                  }}
+                >
+                  <span>{cat.name}</span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)',
+                      background: isActive ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)',
+                      padding: '2px 8px',
+                      borderRadius: 10,
+                    }}
+                  >
+                    {count}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Knowledge Items */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {activeCategoryData ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {activeCategoryData.items.map((item) => {
+                const isExpanded = expandedItems.has(item.id)
+                const favorited = isFavorited(item.id)
+                return (
+                  <div
+                    key={item.id}
+                    style={{
+                      background: 'var(--bg-card)',
+                      borderRadius: 16,
+                      border: '1px solid var(--border-subtle)',
+                      overflow: 'hidden',
+                      transition: 'border-color 0.2s',
+                    }}
+                  >
+                    <button
+                      onClick={() => toggleItem(item.id)}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: '18px 24px',
+                        border: 'none',
+                        background: 'transparent',
+                        color: 'var(--text-primary)',
+                        fontSize: 16,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      {isExpanded ? (
+                        <ChevronDown size={18} color="var(--accent-cyan)" />
+                      ) : (
+                        <ChevronRight size={18} color="var(--text-muted)" />
+                      )}
+                      <span style={{ flex: 1 }}>{item.question}</span>
+                      {item.tags?.map((tag) => (
+                        <span
+                          key={tag}
+                          style={{
+                            fontSize: 11,
+                            color: 'var(--text-muted)',
+                            background: 'rgba(255,255,255,0.05)',
+                            padding: '3px 10px',
+                            borderRadius: 8,
+                            fontWeight: 500,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                          }}
+                        >
+                          <Tag size={10} />
+                          {tag}
+                        </span>
+                      ))}
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleFavorite(item, activeCategoryData.name)
+                        }}
+                        style={{
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: 4,
+                          borderRadius: 6,
+                          transition: 'all 0.2s',
+                        }}
+                        title={favorited ? '取消收藏' : '加入收藏'}
+                      >
+                        {favorited ? (
+                          <BookmarkCheck size={18} color="var(--accent-cyan)" />
+                        ) : (
+                          <Bookmark size={18} color="var(--text-muted)" />
+                        )}
+                      </span>
+                    </button>
+                    {isExpanded && (
+                      <div
+                        style={{
+                          padding: '0 24px 24px 54px',
+                          color: 'var(--text-secondary)',
+                          fontSize: 14,
+                          lineHeight: 1.8,
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {item.answer}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '80px 20px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              <Search size={48} style={{ marginBottom: 16, opacity: 0.5 }} />
+              <p style={{ fontSize: 16 }}>
+                {showOnlyFavorites ? '暂无收藏的题目' : '未找到匹配的知识点'}
+              </p>
+              <p style={{ fontSize: 14, marginTop: 8 }}>
+                {showOnlyFavorites ? '点击题目旁的收藏按钮添加' : '尝试更换搜索关键词'}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,17 @@
+{
+  "name": "platform-hub",
+  "version": "0.1.0",
+  "description": "多功能集成平台 - 支持企业信息查询、金融数据等",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build && mkdir -p packages/backend/dist/public && cp -r packages/frontend/dist/* packages/backend/dist/public/",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:watch": "pnpm -r test:watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
