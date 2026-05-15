@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm -r --parallel dev",
-    "build": "pnpm -r build && mkdir -p packages/backend/dist/public && cp -r packages/frontend/dist/* packages/backend/dist/public/",
+    "build": "pnpm -r build && mkdir -p packages/backend-java/src/main/resources/static && cp -r packages/frontend/dist/* packages/backend-java/src/main/resources/static/",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "test:watch": "pnpm -r test:watch"

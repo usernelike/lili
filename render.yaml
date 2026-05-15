@@ -1,16 +1,17 @@
 services:
   - type: web
     name: lili-hub
-    runtime: node
+    runtime: docker
     plan: free
-    buildCommand: pnpm install && pnpm build
-    startCommand: cd packages/backend && node dist/index.js
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: NODE_VERSION
-        value: 20.19.0
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
-      - key: DATABASE_URL
-        value: file:./data/app.db
+        value: 8080
+      - key: MYSQL_URL
+        value: jdbc:mysql://localhost:3306/lili_hub?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      - key: MYSQL_USER
+        value: root
+      - key: MYSQL_PASSWORD
+        value: ""

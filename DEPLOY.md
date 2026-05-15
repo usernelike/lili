@@ -1,137 +1,166 @@
 # 部署指南
 
-本项目支持一键部署到 [Render](https://render.com/) 云平台，零成本让朋友通过链接访问。
+后端已迁移到 **Spring Boot + Java 21**，数据库使用 **MySQL**。
 
 ---
 
 ## 技术架构
 
-- **前端**：React + Vite → 构建为静态文件
-- **后端**：Express + TypeScript → 构建后由 Node.js 运行
-- **数据库**：SQLite（文件型，零配置）
-- **部署方式**：单服务部署，后端同时 serve 前端静态文件
+- **前端**：React + Vite
+- **主后端**：Spring Boot 3 + Java 21 + Maven
+- **辅助后端**：Express + Node.js（保留，处理 lili 数据源等外部 API）
+- **数据库**：MySQL
 
 ---
 
-## 部署到 Render（推荐零成本方案）
+## 本地开发环境准备
 
-### 1. 准备代码
+### 1. 安装 Java 21 + Maven
 
-确保代码已推送到 GitHub / GitLab：
+**macOS:**
+```bash
+brew install openjdk@21 maven
+```
+
+**Windows:**
+- 下载 [Eclipse Temurin JDK 21](https://adoptium.net/)
+- 下载 [Maven](https://maven.apache.org/download.cgi)
+- 配置环境变量
+
+验证安装：
+```bash
+java -version   # 应显示 21
+mvn -version    # 应显示 3.9+
+```
+
+### 2. 安装 MySQL
+
+**macOS:**
+```bash
+brew install mysql
+brew services start mysql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS lili_hub;"
+```
+
+**Windows:**
+- 下载 [MySQL Installer](https://dev.mysql.com/downloads/installer/)
+- 安装时创建 root 密码
+- 创建数据库：`CREATE DATABASE lili_hub;`
+
+### 3. 配置数据库连接
+
+创建 `packages/backend-java/.env` 文件（不会提交到 Git）：
+
+```properties
+MYSQL_URL=jdbc:mysql://localhost:3306/lili_hub?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+MYSQL_USER=root
+MYSQL_PASSWORD=你的密码
+```
+
+Spring Boot 会自动读取同目录下的 `.env` 文件（如果安装了 dotenv），或者你可以直接设置环境变量。
+
+### 4. 运行 Java 后端
+
+```bash
+cd packages/backend-java
+mvn spring-boot:run
+```
+
+服务启动后访问：
+- http://localhost:8080/health
+- http://localhost:8080/api/interview/favorites
+
+### 5. 运行前端（开发模式）
+
+```bash
+pnpm dev
+```
+
+前端在 http://localhost:3000，通过 Vite proxy 访问 Java 后端。
+
+---
+
+## 部署到 Render（生产环境）
+
+### 1. 准备 MySQL 数据库
+
+Render 不提供免费 MySQL，推荐使用 **PlanetScale**（免费层 5GB）：
+
+1. 注册 [planetscale.com](https://planetscale.com/)
+2. 创建数据库 `lili-hub`
+3. 获取连接字符串（格式类似）：
+   ```
+   jdbc:mysql://aws.connect.psdb.cloud/lili_hub?sslMode=VERIFY_IDENTITY
+   ```
+4. 用户名和密码在 PlanetScale 控制台获取
+
+### 2. 推送代码到 GitHub
 
 ```bash
 git add .
-git commit -m "feat: add database, interview knowledge base, deploy config"
+git commit -m "feat: Java backend + MySQL"
 git push origin main
 ```
 
-### 2. 注册 Render 账号
+### 3. 在 Render 创建 Web Service
 
-访问 [render.com](https://render.com/)，用 GitHub 账号登录。
-
-### 3. 创建 Web Service
-
-1. 点击 **New +** → **Web Service**
-2. 连接你的 GitHub 仓库
-3. 填写配置：
+1. 打开 [render.com](https://render.com/)
+2. **New +** → **Web Service**
+3. 连接 GitHub 仓库
+4. 配置：
 
 | 配置项 | 值 |
 |--------|-----|
-| Name | `lili-hub`（自定义） |
-| Runtime | `Node` |
-| Build Command | `pnpm install && pnpm build` |
-| Start Command | `cd packages/backend && node dist/index.js` |
-| Plan | `Free` |
+| **Name** | `lili-hub` |
+| **Runtime** | `Docker`（会自动识别 Dockerfile） |
+| **Plan** | `Free` |
 
-4. 点击 **Create Web Service**
+5. 添加环境变量：
 
-Render 会自动：
-- 检测 `pnpm-lock.yaml` 使用 pnpm
-- 运行 `pnpm install` 安装依赖
-- 运行 `pnpm build` 构建前后端
-- 启动服务
+| Key | Value |
+|-----|-------|
+| `PORT` | `8080` |
+| `MYSQL_URL` | `jdbc:mysql://aws.connect.psdb.cloud/lili_hub?sslMode=VERIFY_IDENTITY` |
+| `MYSQL_USER` | PlanetScale 用户名 |
+| `MYSQL_PASSWORD` | PlanetScale 密码 |
 
-大约 2-3 分钟后，你会得到一个类似 `https://lili-hub.onrender.com` 的链接，直接发给朋友即可访问。
+6. 点击 **Create Web Service**
 
----
+Docker 构建过程：
+- Stage 1：Node.js 构建前端 → 产物复制到 Java 的 static 目录
+- Stage 2：Maven 构建 Java 后端 → 打包成 jar
+- Stage 3：JRE 运行 jar
 
-## ⚠️ 免费版限制
-
-| 限制 | 说明 |
-|------|------|
-| 休眠机制 | 15 分钟无访问自动休眠，下次访问需 30 秒左右唤醒 |
-| SQLite 数据 | **每次部署后文件系统重置，SQLite 数据会丢失** |
-| 运行时长 | 每月 750 小时免费额度 |
-
-> **重要**：Render 免费版每次重新部署（如 push 代码）后，SQLite 数据库文件会被重置。这意味着数据不会持久保存。
->
-> **解决方案**：如果数据持久化对你很重要，建议购买 Render 的 **Disk**（$0.25/GB/月），将 `/data` 目录挂载到磁盘上，这样 SQLite 数据就会持久保存。
+等待 3-5 分钟，状态变为 ✅ **Live** 后即可访问。
 
 ---
 
-## 本地验证构建
+## 保留的 Node.js 后端
 
-在部署前，可在本地验证构建产物是否能正常运行：
+Node.js 后端代码保留在 `packages/backend/` 目录，如果需要运行：
 
 ```bash
-# 1. 构建前后端
-pnpm build
-
-# 2. 启动生产环境服务
-cd packages/backend && node dist/index.js
-
-# 3. 访问 http://localhost:8080 测试
+cd packages/backend
+pnpm dev        # 开发模式
+pnpm build      # 构建
+pnpm start      # 生产模式
 ```
 
----
+Node.js 后端目前仍处理：
+- `/api/financial/lili/query` — lili 股票数据源
+- `/api/enterprise/*` — 企业查询
 
-## 已部署的数据库 API
-
-部署后，以下 API 可直接使用：
-
-### 面试题收藏
-- `GET /api/interview/favorites` — 获取收藏列表
-- `POST /api/interview/favorites` — 添加收藏
-- `DELETE /api/interview/favorites/:id` — 删除收藏
-
-### 自选股（持久化版，替代 localStorage）
-- `GET /api/watchlist` — 获取自选股
-- `POST /api/watchlist` — 添加自选股
-- `PATCH /api/watchlist/:code` — 更新自选股
-- `DELETE /api/watchlist/:code` — 删除自选股
-
-### 持仓管理
-- `GET /api/positions` — 获取持仓
-- `POST /api/positions` — 添加持仓
-- `PATCH /api/positions/:code` — 更新持仓
-- `DELETE /api/positions/:code` — 删除持仓
-
----
-
-## 其他部署平台
-
-### Railway（免费额度 $5/月）
-- 支持持久化磁盘，SQLite 数据不会丢失
-- 部署方式类似
-
-### 自有服务器（阿里云/腾讯云）
-- 购买轻量应用服务器（约 ¥60-150/年）
-- 安装 Node.js、Git、PM2
-- `git clone` + `pnpm install` + `pnpm build` + `pm2 start`
-- 配合 Nginx 反向代理 + SSL
+后续如需完全迁移到 Java，可继续开发 `FinancialController` 和 `EnterpriseController`。
 
 ---
 
 ## 常见问题
 
-**Q: 为什么构建时 better-sqlite3 编译很慢？**  
-A: better-sqlite3 包含 C++ 原生模块，首次安装需要编译。Render 的构建环境会自动处理，约需 1-2 分钟。
+**Q: Java 后端启动报错 "Communications link failure"？**  
+A: MySQL 没启动或连接配置错误。检查 MySQL 服务状态和 `application.properties` 中的连接参数。
 
-**Q: 前端路由刷新 404？**  
-A: 已配置 SPA fallback，后端会将所有非 API 请求指向 `index.html`，React Router 可正常工作。
+**Q: 前端刷新 404？**  
+A: Java 后端已配置 SPA fallback，所有非 API 路由会返回 `index.html`。
 
-**Q: 如何更新已部署的网站？**  
-A: 只需 `git push`，Render 会自动检测并重新构建部署。
-
-**Q: 数据丢了怎么办？**  
-A: Render 免费版每次部署会重置文件系统。如需持久化，请升级到 Render 的 Disk 服务，或迁移到 Railway/自有服务器。
+**Q: 如何更新部署？**  
+A: `git push` 后 Render 会自动重新构建 Docker 镜像并部署。
