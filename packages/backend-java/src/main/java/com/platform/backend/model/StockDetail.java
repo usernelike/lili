@@ -1,0 +1,40 @@
+package com.platform.backend.model;
+
+import java.util.List;
+
+public record StockDetail(
+    String code,
+    String name,
+    double price,
+    double change,
+    double changePercent,
+    long volume,
+    double amount,
+    double high,
+    double low,
+    double open,
+    double prevClose,
+    String market,
+    String updateTime,
+    List<Double> bidPrice,
+    List<Integer> bidVolume,
+    List<Double> askPrice,
+    List<Integer> askVolume,
+    double turnoverRate,
+    double peRatio,
+    double pbRatio,
+    double totalMarketCap,
+    double floatMarketCap,
+    double totalShares,
+    double floatShares,
+    double amplitude,
+    double volumeRatio,
+    double commissionRatio,
+    double avgPrice,
+    double week52High,
+    double week52Low,
+    double change5d,
+    double change10d,
+    double change20d,
+    List<KLineData> kline
+) {}
