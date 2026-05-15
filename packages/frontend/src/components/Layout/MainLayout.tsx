@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { BarChart3, Building2, Home, Database, BookOpen } from 'lucide-react'
+import { BarChart3, Building2, Home, Database } from 'lucide-react'
 
 const navItems = [
   { path: '/', label: '首页', icon: Home },
