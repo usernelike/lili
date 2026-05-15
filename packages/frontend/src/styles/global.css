@@ -115,6 +115,15 @@ body {
   animation: float 4s ease-in-out infinite;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
 /* Ant Design overrides for dark theme */
 .ant-input,
 .ant-input-search .ant-input {

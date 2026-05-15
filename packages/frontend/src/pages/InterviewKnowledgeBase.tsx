@@ -9,6 +9,7 @@ import {
   Bookmark,
   BookmarkCheck,
   Filter,
+  Loader2,
 } from 'lucide-react'
 import interviewData from '../data/interviewData'
 
@@ -27,7 +28,7 @@ export default function InterviewKnowledgeBase() {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const [favorites, setFavorites] = useState<FavoriteItem[]>([])
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
-  const [favLoading, setFavLoading] = useState(false)
+  const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set())
 
   // Load favorites from backend
   const loadFavorites = useCallback(async () => {
@@ -58,8 +59,8 @@ export default function InterviewKnowledgeBase() {
 
   const toggleFavorite = useCallback(
     async (item: { id: string; question: string }, categoryName: string) => {
-      if (favLoading) return
-      setFavLoading(true)
+      if (loadingItems.has(item.id)) return
+      setLoadingItems((prev) => new Set(prev).add(item.id))
       try {
         if (isFavorited(item.id)) {
           const favId = getFavoriteId(item.id)
@@ -81,10 +82,14 @@ export default function InterviewKnowledgeBase() {
       } catch (err) {
         console.error('收藏操作失败:', err)
       } finally {
-        setFavLoading(false)
+        setLoadingItems((prev) => {
+          const next = new Set(prev)
+          next.delete(item.id)
+          return next
+        })
       }
     },
-    [favLoading, isFavorited, getFavoriteId, loadFavorites]
+    [loadingItems, isFavorited, getFavoriteId, loadFavorites]
   )
 
   const toggleItem = useCallback((id: string) => {
@@ -312,6 +317,7 @@ export default function InterviewKnowledgeBase() {
               {activeCategoryData.items.map((item) => {
                 const isExpanded = expandedItems.has(item.id)
                 const favorited = isFavorited(item.id)
+                const isLoading = loadingItems.has(item.id)
                 return (
                   <div
                     key={item.id}
@@ -369,19 +375,22 @@ export default function InterviewKnowledgeBase() {
                       <span
                         onClick={(e) => {
                           e.stopPropagation()
-                          toggleFavorite(item, activeCategoryData.name)
+                          if (!isLoading) toggleFavorite(item, activeCategoryData.name)
                         }}
                         style={{
-                          cursor: 'pointer',
+                          cursor: isLoading ? 'not-allowed' : 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           padding: 4,
                           borderRadius: 6,
                           transition: 'all 0.2s',
+                          opacity: isLoading ? 0.6 : 1,
                         }}
                         title={favorited ? '取消收藏' : '加入收藏'}
                       >
-                        {favorited ? (
+                        {isLoading ? (
+                          <Loader2 size={18} color="var(--accent-cyan)" className="spin" />
+                        ) : favorited ? (
                           <BookmarkCheck size={18} color="var(--accent-cyan)" />
                         ) : (
                           <Bookmark size={18} color="var(--text-muted)" />
