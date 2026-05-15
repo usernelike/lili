@@ -35,3 +35,11 @@ coverage
 .cache
 temp
 tmp
+
+# Java
+packages/backend-java/target/
+*.class
+*.jar
+*.war
+*.ear
+
