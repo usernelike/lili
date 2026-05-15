@@ -9,5 +9,7 @@ services:
         value: production
       - key: PORT
         value: 8080
-      - key: DATABASE_URL
-        value: jdbc:sqlite:lili_hub.db
+      - key: MYSQL_URL
+        value: jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/lili_hub?useSSL=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      - key: MYSQL_USER
+        value: 2mBZMNzdBRWBLui.root

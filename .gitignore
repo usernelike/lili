@@ -43,3 +43,4 @@ packages/backend-java/target/
 *.war
 *.ear
 
+*.db

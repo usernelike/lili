@@ -41,8 +41,8 @@ public class WatchlistRepository {
         return jdbc.update(
             "INSERT INTO watchlist_items (code, name, market, note, category, hold_cost, hold_quantity) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-            "ON CONFLICT(code) DO UPDATE SET name = excluded.name, market = excluded.market, " +
-            "note = excluded.note, category = excluded.category, hold_cost = excluded.hold_cost, hold_quantity = excluded.hold_quantity",
+            "ON DUPLICATE KEY UPDATE name = VALUES(name), market = VALUES(market), " +
+            "note = VALUES(note), category = VALUES(category), hold_cost = VALUES(hold_cost), hold_quantity = VALUES(hold_quantity)",
             code, name, market, note, category, holdCost, holdQuantity
         );
     }

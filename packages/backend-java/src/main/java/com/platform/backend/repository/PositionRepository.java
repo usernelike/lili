@@ -46,7 +46,7 @@ public class PositionRepository {
 
     public int updateByCode(String code, Double costPrice, Double shares, String note) {
         return jdbc.update(
-            "UPDATE positions SET cost_price = ?, shares = ?, note = ?, updated_at = CURRENT_TIMESTAMP WHERE code = ?",
+            "UPDATE positions SET cost_price = ?, shares = ?, note = ? WHERE code = ?",
             costPrice, shares, note, code
         );
     }
