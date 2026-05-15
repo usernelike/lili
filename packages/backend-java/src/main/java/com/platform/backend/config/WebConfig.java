@@ -35,6 +35,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/").setViewName("forward:/index.html");
+        // SPA fallback: forward non-API, non-file paths to index.html
         registry.addViewController("/{path:[^\\.]*}")
             .setViewName("forward:/index.html");
         registry.addViewController("/**/{path:[^\\.]*}")

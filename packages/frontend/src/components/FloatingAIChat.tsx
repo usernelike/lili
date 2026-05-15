@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { MessageSquare, X, Send, Bot, User, Loader2 } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 
@@ -10,9 +10,6 @@ interface ChatMessage {
 
 export default function FloatingAIChat() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
@@ -23,7 +20,6 @@ export default function FloatingAIChat() {
   const [inputValue, setInputValue] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const buttonRef = useRef<HTMLDivElement>(null)
   const chatWindowRef = useRef<HTMLDivElement>(null)
 
   // Check login
@@ -44,46 +40,7 @@ export default function FloatingAIChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Drag handlers
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      if (!buttonRef.current) return
-      const rect = buttonRef.current.getBoundingClientRect()
-      setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-      setIsDragging(true)
-    },
-    []
-  )
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!isDragging) return
-      const x = e.clientX - dragOffset.x
-      const y = e.clientY - dragOffset.y
-      const maxX = window.innerWidth - 60
-      const maxY = window.innerHeight - 60
-      setPosition({
-        x: Math.max(0, Math.min(x, maxX)),
-        y: Math.max(0, Math.min(y, maxY)),
-      })
-    },
-    [isDragging, dragOffset]
-  )
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-  }, [])
-
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mouseup', handleMouseUp)
-    }
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp])
 
   // Send message
   const sendMessage = async () => {
@@ -169,17 +126,11 @@ export default function FloatingAIChat() {
     <>
       {/* Floating Button */}
       <div
-        ref={buttonRef}
-        onMouseDown={handleMouseDown}
-        onClick={() => {
-          if (!isDragging) setIsOpen(!isOpen)
-        }}
+        onClick={() => setIsOpen(!isOpen)}
         style={{
           position: 'fixed',
-          right: position.x === 0 ? 24 : undefined,
-          bottom: position.y === 0 ? 24 : undefined,
-          left: position.x !== 0 ? position.x : undefined,
-          top: position.y !== 0 ? position.y : undefined,
+          right: 24,
+          bottom: 80,
           zIndex: 9999,
           width: 56,
           height: 56,
@@ -188,9 +139,9 @@ export default function FloatingAIChat() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: isDragging ? 'grabbing' : 'pointer',
+          cursor: 'pointer',
           boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
-          transition: isDragging ? 'none' : 'all 0.3s',
+          transition: 'all 0.3s',
           userSelect: 'none',
         }}
         title="AI 助手"
