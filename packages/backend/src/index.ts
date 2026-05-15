@@ -10,7 +10,7 @@ import { initDatabase } from './db'
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT || 8081
 
 // Initialize SQLite database
 initDatabase()
