@@ -7,7 +7,7 @@ const navItems = [
   { path: '/enterprise', label: '企业查询', icon: Building2 },
   { path: '/financial', label: '金融数据', icon: BarChart3 },
   { path: '/lili', label: 'lili数据源', icon: Database },
-  { path: '/interview', label: '面试知识库', icon: BookOpen },
+  // { path: '/interview', label: '面试知识库', icon: BookOpen },
 ]
 
 export default function MainLayout() {
