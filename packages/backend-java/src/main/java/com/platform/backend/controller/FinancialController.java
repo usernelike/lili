@@ -31,9 +31,33 @@ public class FinancialController {
     }
 
     @GetMapping("/stocks")
-    public ApiResponse<?> getStocks() {
-        List<StockQuote> stocks = stockService.getRealTimeQuotes(List.of());
-        return ApiResponse.ok(Map.of("list", stocks, "total", stocks.size(), "page", 1, "pageSize", stocks.size(), "totalPages", 1));
+    public ApiResponse<?> getStocks(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        List<StockService.StockInfo> all = stockService.getStockList();
+        int total = all.size();
+        int totalPages = (int) Math.ceil((double) total / pageSize);
+        int start = (page - 1) * pageSize;
+        int end = Math.min(start + pageSize, total);
+        if (start >= total) {
+            return ApiResponse.ok(Map.of("list", List.of(), "total", total, "page", page, "pageSize", pageSize, "totalPages", totalPages));
+        }
+        List<String> codes = all.subList(start, end).stream()
+            .map(StockService.StockInfo::code)
+            .toList();
+        List<StockQuote> stocks = stockService.getRealTimeQuotes(codes);
+        return ApiResponse.ok(Map.of("list", stocks, "total", total, "page", page, "pageSize", pageSize, "totalPages", totalPages));
+    }
+
+    @GetMapping("/stocks/search")
+    public ApiResponse<?> searchStocks(@RequestParam String keyword) {
+        List<StockService.StockInfo> matched = stockService.searchStocks(keyword);
+        if (matched.isEmpty()) {
+            return ApiResponse.ok(Map.of("list", List.of(), "total", 0));
+        }
+        List<String> codes = matched.stream().map(StockService.StockInfo::code).toList();
+        List<StockQuote> stocks = stockService.getRealTimeQuotes(codes);
+        return ApiResponse.ok(Map.of("list", stocks, "total", matched.size()));
     }
 
     @GetMapping("/stocks/{code}")

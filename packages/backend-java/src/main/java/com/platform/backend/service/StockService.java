@@ -5,6 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -24,20 +27,33 @@ public class StockService {
 
     private record CacheEntry<T>(T data, long timestamp) {}
 
-    private final List<StockInfo> stockList = List.of(
-        new StockInfo("sh600519", "贵州茅台", "上海"),
-        new StockInfo("sz000001", "平安银行", "深圳"),
-        new StockInfo("sz000002", "万科A", "深圳"),
-        new StockInfo("sz300033", "同花顺", "深圳"),
-        new StockInfo("sz000858", "五粮液", "深圳"),
-        new StockInfo("sz002594", "比亚迪", "深圳"),
-        new StockInfo("sh600036", "招商银行", "上海"),
-        new StockInfo("sh601318", "中国平安", "上海"),
-        new StockInfo("sh600276", "恒瑞医药", "上海"),
-        new StockInfo("sz000725", "京东方A", "深圳"),
-        new StockInfo("sh600900", "长江电力", "上海"),
-        new StockInfo("sz002415", "海康威视", "深圳")
-    );
+    private final List<StockInfo> stockList;
+
+    public StockService() {
+        List<StockInfo> loaded = new ArrayList<>();
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(getClass().getResourceAsStream("/stocks.json"));
+            for (JsonNode node : root) {
+                loaded.add(new StockInfo(
+                    node.get("code").asText(),
+                    node.get("name").asText(),
+                    node.get("market").asText()
+                ));
+            }
+        } catch (Exception e) {
+            // Fallback to minimal list if file missing
+            loaded.addAll(List.of(
+                new StockInfo("sh600519", "贵州茅台", "上海"),
+                new StockInfo("sz000001", "平安银行", "深圳"),
+                new StockInfo("sz000002", "万科A", "深圳"),
+                new StockInfo("sz300033", "同花顺", "深圳"),
+                new StockInfo("sz000858", "五粮液", "深圳"),
+                new StockInfo("sz002594", "比亚迪", "深圳")
+            ));
+        }
+        this.stockList = List.copyOf(loaded);
+    }
 
     private final List<StockInfo> indexList = List.of(
         new StockInfo("sh000001", "上证指数", ""),
@@ -83,6 +99,18 @@ public class StockService {
             String raw = fetchTencentGBK(url);
             return parseTencentResponse(raw);
         });
+    }
+
+    public List<StockInfo> getStockList() {
+        return stockList;
+    }
+
+    public List<StockInfo> searchStocks(String keyword) {
+        if (keyword == null || keyword.isBlank()) return List.of();
+        String kw = keyword.toLowerCase();
+        return stockList.stream()
+            .filter(s -> s.code().toLowerCase().contains(kw) || s.name().contains(keyword))
+            .toList();
     }
 
     public List<StockQuote> getMarketIndices() {

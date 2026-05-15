@@ -14,10 +14,10 @@ import {
   ArrowDownRight,
   Minus,
 } from 'lucide-react'
-import { useStockDetail } from '../hooks/useStockData'
+import { useStockDetail, useTechnicalIndicators } from '../hooks/useStockData'
 
-// 简单的SVG K线图组件
-function MiniKLine({ data, width = 600, height = 200 }: { data: Array<{ date: string; close: number }>; width?: number; height?: number }) {
+// 蜡烛图 K 线组件
+function CandlestickChart({ data, width = 600, height = 200 }: { data: Array<{ date: string; open: number; close: number; high: number; low: number }>; width?: number; height?: number }) {
   if (data.length === 0) {
     return (
       <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
@@ -26,41 +26,166 @@ function MiniKLine({ data, width = 600, height = 200 }: { data: Array<{ date: st
     )
   }
 
-  const prices = data.map((d) => d.close)
-  const min = Math.min(...prices) * 0.995
-  const max = Math.max(...prices) * 1.005
+  const allPrices = data.flatMap((item) => [item.high, item.low])
+  const min = Math.min(...allPrices) * 0.998
+  const max = Math.max(...allPrices) * 1.002
   const range = max - min || 1
+  const padding = { top: 20, bottom: 30, left: 50, right: 20 }
+  const chartW = width - padding.left - padding.right
+  const chartH = height - padding.top - padding.bottom
+  const barWidth = Math.max(2, Math.min(10, (chartW / data.length) * 0.7))
 
-  const points = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * (width - 40) + 20
-    const y = height - 30 - ((d.close - min) / range) * (height - 50)
-    return `${x},${y}`
-  }).join(' ')
+  const scaleY = (price: number) => padding.top + chartH - ((price - min) / range) * chartH
+  const scaleX = (i: number) => padding.left + (i / (data.length - 1)) * chartW
 
   const firstPrice = data[0].close
   const lastPrice = data[data.length - 1].close
-  const color = lastPrice >= firstPrice ? '#10b981' : '#ef4444'
+  const maColor = lastPrice >= firstPrice ? '#10b981' : '#ef4444'
+
+  // MA line points
+  const ma5Points = data.map((_item, i) => {
+    if (i < 4) return null
+    const ma = data.slice(i - 4, i + 1).reduce((s, x) => s + x.close, 0) / 5
+    return `${scaleX(i)},${scaleY(ma)}`
+  }).filter(Boolean).join(' ')
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
       {/* Grid lines */}
       {[0, 1, 2, 3].map((i) => (
-        <line key={i} x1={20} y1={height - 30 - (i / 3) * (height - 50)} x2={width - 20} y2={height - 30 - (i / 3) * (height - 50)} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
+        <line key={`h${i}`} x1={padding.left} y1={padding.top + (i / 3) * chartH} x2={width - padding.right} y2={padding.top + (i / 3) * chartH} stroke="rgba(255,255,255,0.05)" strokeWidth={1} />
       ))}
-      {/* Price line */}
-      <polyline points={points} fill="none" stroke={color} strokeWidth={2} />
-      {/* Area fill */}
-      <polygon
-        points={`${points.split(' ')[0]} ${points} ${points.split(' ').pop()} ${width - 20},${height - 30} 20,${height - 30}`}
-        fill={`${color}15`}
-      />
-      {/* Labels */}
-      <text x={10} y={15} fill="var(--text-muted)" fontSize={10}>{max.toFixed(2)}</text>
-      <text x={10} y={height - 20} fill="var(--text-muted)" fontSize={10}>{min.toFixed(2)}</text>
+      {/* Horizontal grid labels */}
+      {[0, 1, 2, 3].map((i) => {
+        const price = max - (i / 3) * range
+        return <text key={`hl${i}`} x={padding.left - 5} y={padding.top + (i / 3) * chartH + 4} fill="var(--text-muted)" fontSize={9} textAnchor="end">{price.toFixed(2)}</text>
+      })}
+      {/* Candlesticks */}
+      {data.map((d, i) => {
+        const x = scaleX(i)
+        const up = d.close >= d.open
+        const color = up ? '#10b981' : '#ef4444'
+        const bodyTop = scaleY(Math.max(d.open, d.close))
+        const bodyBottom = scaleY(Math.min(d.open, d.close))
+        const bodyH = Math.max(1, bodyBottom - bodyTop)
+        const wickTop = scaleY(d.high)
+        const wickBottom = scaleY(d.low)
+        return (
+          <g key={i}>
+            {/* Wick */}
+            <line x1={x} y1={wickTop} x2={x} y2={wickBottom} stroke={color} strokeWidth={1} />
+            {/* Body */}
+            <rect x={x - barWidth / 2} y={bodyTop} width={barWidth} height={bodyH} fill={up ? color : color} stroke={color} strokeWidth={1} opacity={up ? 0.8 : 0.6} />
+          </g>
+        )
+      })}
+      {/* MA5 line */}
+      {ma5Points && <polyline points={ma5Points} fill="none" stroke={maColor} strokeWidth={1.5} strokeDasharray="4,2" opacity={0.7} />}
       {/* Date labels */}
-      <text x={20} y={height - 10} fill="var(--text-muted)" fontSize={9}>{data[0].date}</text>
-      <text x={width - 80} y={height - 10} fill="var(--text-muted)" fontSize={9}>{data[data.length - 1].date}</text>
+      <text x={padding.left} y={height - 10} fill="var(--text-muted)" fontSize={9}>{data[0].date}</text>
+      <text x={width - padding.right - 60} y={height - 10} fill="var(--text-muted)" fontSize={9}>{data[data.length - 1].date}</text>
+      {/* Legend */}
+      <text x={padding.left} y={14} fill="var(--text-muted)" fontSize={10}>MA5 <tspan fill={maColor}>───</tspan></text>
     </svg>
+  )
+}
+
+// 技术指标面板
+function TechnicalPanel({ code }: { code: string }) {
+  const { indicators, loading, error } = useTechnicalIndicators(code)
+
+  if (loading) {
+    return (
+      <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
+        <Activity size={20} style={{ marginBottom: 8, animation: 'spin 1s linear infinite' }} />
+        <div style={{ fontSize: 13 }}>计算技术指标中...</div>
+      </div>
+    )
+  }
+
+  if (error || !indicators) {
+    return (
+      <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+        {error || '暂无技术指标数据'}
+      </div>
+    )
+  }
+
+  const sections = [
+    {
+      title: '移动平均线 MA',
+      icon: BarChart3,
+      items: [
+        { label: 'MA5', value: indicators.ma.ma5.toFixed(2) },
+        { label: 'MA10', value: indicators.ma.ma10.toFixed(2) },
+        { label: 'MA20', value: indicators.ma.ma20.toFixed(2) },
+        { label: 'MA60', value: indicators.ma.ma60.toFixed(2) },
+      ],
+    },
+    {
+      title: 'MACD',
+      icon: Activity,
+      items: [
+        { label: 'DIF', value: indicators.macd.dif.toFixed(3) },
+        { label: 'DEA', value: indicators.macd.dea.toFixed(3) },
+        { label: 'MACD', value: indicators.macd.macd.toFixed(3) },
+        { label: '信号', value: indicators.macd.dif > indicators.macd.dea ? '金叉' : '死叉', color: indicators.macd.dif > indicators.macd.dea ? 'var(--accent-green)' : 'var(--accent-red)' },
+      ],
+    },
+    {
+      title: 'KDJ',
+      icon: Gauge,
+      items: [
+        { label: 'K', value: indicators.kdj.k.toFixed(2) },
+        { label: 'D', value: indicators.kdj.d.toFixed(2) },
+        { label: 'J', value: indicators.kdj.j.toFixed(2) },
+        { label: '信号', value: indicators.kdj.j > 80 ? '超买' : indicators.kdj.j < 20 ? '超卖' : '震荡', color: indicators.kdj.j > 80 ? 'var(--accent-red)' : indicators.kdj.j < 20 ? 'var(--accent-green)' : 'var(--text-secondary)' },
+      ],
+    },
+    {
+      title: 'RSI',
+      icon: TrendingUp,
+      items: [
+        { label: 'RSI6', value: indicators.rsi.rsi6.toFixed(2) },
+        { label: 'RSI12', value: indicators.rsi.rsi12.toFixed(2) },
+        { label: 'RSI24', value: indicators.rsi.rsi24.toFixed(2) },
+        { label: '信号', value: indicators.rsi.rsi6 > 70 ? '超买' : indicators.rsi.rsi6 < 30 ? '超卖' : '正常', color: indicators.rsi.rsi6 > 70 ? 'var(--accent-red)' : indicators.rsi.rsi6 < 30 ? 'var(--accent-green)' : 'var(--text-secondary)' },
+      ],
+    },
+    {
+      title: '布林带 BOLL',
+      icon: Target,
+      items: [
+        { label: '上轨', value: indicators.boll.upper.toFixed(2) },
+        { label: '中轨', value: indicators.boll.middle.toFixed(2) },
+        { label: '下轨', value: indicators.boll.lower.toFixed(2) },
+        { label: '带宽', value: ((indicators.boll.upper - indicators.boll.lower) / indicators.boll.middle * 100).toFixed(2) + '%' },
+      ],
+    },
+  ]
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      {sections.map((sec) => {
+        const Icon = sec.icon
+        return (
+          <div key={sec.title} style={{ padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <Icon size={14} style={{ color: 'var(--accent-cyan)' }} />
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{sec.title}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px' }}>
+              {sec.items.map((item) => (
+                <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{item.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: (item as any).color || 'var(--text-primary)' }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -344,12 +469,29 @@ export default function StockDetail() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <BarChart3 size={20} style={{ color: 'var(--accent-cyan)' }} />
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>近期走势</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700 }}>K线走势</h2>
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{detail.kline.length > 0 ? `近${detail.kline.length}个交易日` : ''}</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
-          <MiniKLine data={detail.kline} />
+          <CandlestickChart data={detail.kline} />
         </div>
+      </div>
+
+      {/* 技术指标 */}
+      <div
+        style={{
+          padding: 24,
+          borderRadius: 16,
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          marginBottom: 24,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <Activity size={20} style={{ color: 'var(--accent-cyan)' }} />
+          <h2 style={{ fontSize: 18, fontWeight: 700 }}>技术指标</h2>
+        </div>
+        <TechnicalPanel code={detail.code} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>

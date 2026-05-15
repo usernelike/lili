@@ -20,7 +20,7 @@ import {
   Inbox,
 } from 'lucide-react'
 import type { ColumnsType } from 'antd/es/table'
-import { useStockData, useMarketIndices, useCommodities } from '../hooks/useStockData'
+import { useStockData, useMarketIndices, useCommodities, useStockSearch } from '../hooks/useStockData'
 import type { StockData } from '../hooks/useStockData'
 
 const features = [
@@ -83,15 +83,36 @@ const marketSupport = [
 
 export default function FinancialData() {
   const navigate = useNavigate()
-  const { stocks, loading, lastUpdate, refetch } = useStockData()
+  const [page, setPage] = useState(1)
+  const [pageSize] = useState(20)
+  const { response, stocks, loading, lastUpdate, refetch } = useStockData(page, pageSize)
   const { indices } = useMarketIndices()
   const { commodities, loading: commodityLoading } = useCommodities()
   const [searchValue, setSearchValue] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const { results: searchResults, loading: searchLoading, search } = useStockSearch()
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
 
-  const filtered = stocks.filter(
-    (s) => s.name.includes(searchValue) || s.code.includes(searchValue)
-  )
+  const displayStocks = isSearching ? searchResults : stocks
+  const displayLoading = isSearching ? searchLoading : loading
+  const totalPages = response?.totalPages || 1
+  const total = response?.total || 0
+
+  const handleSearch = (val: string) => {
+    setSearchValue(val)
+    if (val.trim()) {
+      setIsSearching(true)
+      search(val)
+    } else {
+      setIsSearching(false)
+      setPage(1)
+    }
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+    refetch(newPage, pageSize)
+  }
 
   const columns: ColumnsType<StockData> = [
     {
@@ -371,7 +392,14 @@ export default function FinancialData() {
       </div>
 
       {/* Real-time Quotes */}
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>实时行情（腾讯证券接口）</h2>
+      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
+        实时行情（腾讯证券接口）
+        {!isSearching && total > 0 && (
+          <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400, marginLeft: 12 }}>
+            共 {total} 只，第 {page}/{totalPages} 页
+          </span>
+        )}
+      </h2>
 
       {/* Indices */}
       <div
@@ -419,17 +447,18 @@ export default function FinancialData() {
           marginBottom: 16,
         }}
       >
-        <div style={{ position: 'relative', width: 280 }}>
+        <div style={{ position: 'relative', width: 320 }}>
           <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <Input
-            placeholder="搜索股票"
+            placeholder="搜索股票代码或名称"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             style={{ paddingLeft: 40, background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
+            allowClear
           />
         </div>
         <button
-          onClick={refetch}
+          onClick={() => refetch()}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -449,7 +478,7 @@ export default function FinancialData() {
         </button>
       </div>
 
-      {filtered.length === 0 && !loading ? (
+      {displayStocks.length === 0 && !displayLoading ? (
         <div
           style={{
             padding: '60px 0',
@@ -468,19 +497,79 @@ export default function FinancialData() {
           </div>
         </div>
       ) : (
-        <Table
-          columns={columns}
-          dataSource={filtered}
-          rowKey="code"
-          pagination={false}
-          scroll={{ x: 1000 }}
-          loading={loading}
-          style={{ marginBottom: 40 }}
-          onRow={(record) => ({
-            onClick: () => navigate(`/stock/${record.code}`),
-            style: { cursor: 'pointer' },
-          })}
-        />
+        <>
+          <Table
+            columns={columns}
+            dataSource={displayStocks}
+            rowKey="code"
+            pagination={false}
+            scroll={{ x: 1000 }}
+            loading={displayLoading}
+            style={{ marginBottom: 20 }}
+            onRow={(record) => ({
+              onClick: () => navigate(`/stock/${record.code}`),
+              style: { cursor: 'pointer' },
+            })}
+          />
+
+          {/* Pagination */}
+          {!isSearching && totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page <= 1}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-subtle)',
+                  background: 'transparent',
+                  color: page <= 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                  cursor: page <= 1 ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                上一页
+              </button>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const p = i + 1
+                const isActive = p === page
+                return (
+                  <button
+                    key={p}
+                    onClick={() => handlePageChange(p)}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 8,
+                      border: '1px solid ' + (isActive ? 'var(--accent-cyan)' : 'var(--border-subtle)'),
+                      background: isActive ? 'rgba(0,212,255,0.1)' : 'transparent',
+                      color: isActive ? 'var(--accent-cyan)' : 'var(--text-primary)',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      fontWeight: isActive ? 600 : 400,
+                    }}
+                  >
+                    {p}
+                  </button>
+                )
+              })}
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= totalPages}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-subtle)',
+                  background: 'transparent',
+                  color: page >= totalPages ? 'var(--text-muted)' : 'var(--text-primary)',
+                  cursor: page >= totalPages ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                下一页
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Usage Examples */}

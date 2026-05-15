@@ -108,19 +108,29 @@ export interface PositionSummary {
 
 // ========== 基础行情 ==========
 
-export function useStockData() {
+export interface PaginatedStockResponse {
+  list: StockData[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export function useStockData(page = 1, pageSize = 20) {
+  const [response, setResponse] = useState<PaginatedStockResponse | null>(null)
   const [stocks, setStocks] = useState<StockData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
-  const fetchStocks = useCallback(async () => {
+  const fetchStocks = useCallback(async (p = page, ps = pageSize) => {
     setLoading(true)
     setError(null)
     try {
-      const res = await apiFetch('/api/financial/stocks')
+      const res = await apiFetch(`/api/financial/stocks?page=${p}&pageSize=${ps}`)
       const data = await res.json()
       if (data.success) {
+        setResponse(data.data)
         setStocks(data.data.list)
         setLastUpdate(new Date())
       } else {
@@ -131,15 +141,39 @@ export function useStockData() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [page, pageSize])
 
   useEffect(() => {
     fetchStocks()
-    const interval = setInterval(fetchStocks, 15000)
-    return () => clearInterval(interval)
   }, [fetchStocks])
 
-  return { stocks, loading, error, lastUpdate, refetch: fetchStocks }
+  return { response, stocks, loading, error, lastUpdate, refetch: fetchStocks }
+}
+
+export function useStockSearch() {
+  const [results, setResults] = useState<StockData[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const search = useCallback(async (keyword: string) => {
+    if (!keyword.trim()) {
+      setResults([])
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await apiFetch(`/api/financial/stocks/search?keyword=${encodeURIComponent(keyword)}`)
+      const data = await res.json()
+      if (data.success) {
+        setResults(data.data.list)
+      }
+    } catch (err) {
+      console.error('Search failed:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { results, loading, search }
 }
 
 export function useMarketIndices() {
