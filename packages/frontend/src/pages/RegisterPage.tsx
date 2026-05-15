@@ -10,14 +10,14 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [figureState, setFigureState] = useState<'normal' | 'peek' | 'hide'>('normal')
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false)
 
   const handleFocus = (type: string) => {
-    setFigureState(type === 'password' ? 'hide' : 'normal')
+    setIsPasswordFocused(type === 'password')
   }
 
   const handleBlur = () => {
-    setFigureState('normal')
+    setIsPasswordFocused(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +86,7 @@ export default function RegisterPage() {
       >
         {/* 左侧：动画 */}
         <div style={{ flex: 1, minWidth: 280, maxWidth: 400, textAlign: 'center' }}>
-          <StickFigureScene state={figureState} />
+          <StickFigureScene isPasswordFocused={isPasswordFocused} />
           <h2
             style={{
               fontSize: 28,
