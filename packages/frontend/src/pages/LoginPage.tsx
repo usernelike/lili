@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { AnimatedCharacters } from '../components/AnimatedCharacters'
 import { Eye, EyeOff } from 'lucide-react'
@@ -11,6 +11,13 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
+
+  useEffect(() => {
+    setUsername('')
+    setPassword('')
+    setShowPassword(false)
+    setError('')
+  }, [])
 
   const handleFocus = () => setIsTyping(true)
   const handleBlur = () => setIsTyping(false)
@@ -180,7 +187,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <form onSubmit={handleSubmit} autoComplete="off" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div>
               <label
                 style={{
@@ -196,7 +203,7 @@ export default function LoginPage() {
               <input
                 type="text"
                 name="login-username"
-                autoComplete="username"
+                autoComplete="off"
                 placeholder="请输入用户名"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -232,7 +239,7 @@ export default function LoginPage() {
               <div style={{ position: 'relative' }}>
                 <input
                   name="login-password"
-                  autoComplete="current-password"
+                  autoComplete="off"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="请输入密码"
                   value={password}
