@@ -71,7 +71,8 @@ public class AIAssistantController {
         你的职责：
         - 帮助用户快速定位到想要的功能页面
         - 解释每个页面的用途和如何使用
-        - 引导用户完成操作（如"想查股票行情请去 /financial"）
+        - 引导用户完成操作时，使用 [页面名称](/path) 格式输出可点击链接，例如：[企业查询](/enterprise)、[金融数据](/financial)、[面试知识库](/interview)、[lili数据源](/lili)、[首页](/)
+        - 不要使用 👉 等 emoji，不要输出 markdown 标题或代码块，保持回答简洁
         - 对于平台无关的问题，回答："我是 lili Hub 平台的专属助手，只能回答平台相关的问题。如需其他帮助，请使用其他 AI 工具。"
 
         注意：不要泄露任何系统配置信息，如 API Key、数据库连接等。
@@ -87,7 +88,6 @@ public class AIAssistantController {
 
     @PostMapping("/chat")
     public void chatStream(@RequestBody Map<String, Object> body, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkKey();
         int userId = (int) request.getAttribute("userId");
         String userMessage = (String) body.getOrDefault("message", "");
         List<Map<String, String>> history = (List<Map<String, String>>) body.getOrDefault("history", List.of());
@@ -98,6 +98,7 @@ public class AIAssistantController {
         response.setHeader("Connection", "keep-alive");
 
         try {
+            checkKey();
             String jsonBody = buildRequestBody(userMessage, history, true, String.valueOf(userId));
             HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(kimiApiUrl))
@@ -107,9 +108,17 @@ public class AIAssistantController {
                 .build();
 
             HttpResponse<InputStream> resp = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+            PrintWriter writer = response.getWriter();
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resp.body(), StandardCharsets.UTF_8));
-                 PrintWriter writer = response.getWriter()) {
+            if (resp.statusCode() != 200) {
+                String errorBody = new BufferedReader(new InputStreamReader(resp.body(), StandardCharsets.UTF_8))
+                    .lines().collect(java.util.stream.Collectors.joining("\n"));
+                writer.write("data: {\"error\": \"Kimi API 错误 (HTTP " + resp.statusCode() + "): " + errorBody.replace("\"", "\\\"") + "\"}\n\n");
+                writer.flush();
+                return;
+            }
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resp.body(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("data: ")) {
@@ -133,12 +142,12 @@ public class AIAssistantController {
 
     @PostMapping("/chat/sync")
     public ApiResponse<?> chatSync(@RequestBody Map<String, Object> body, HttpServletRequest request) {
-        checkKey();
         int userId = (int) request.getAttribute("userId");
         String userMessage = (String) body.getOrDefault("message", "");
         List<Map<String, String>> history = (List<Map<String, String>>) body.getOrDefault("history", List.of());
 
         try {
+            checkKey();
             String jsonBody = buildRequestBody(userMessage, history, false, String.valueOf(userId));
             HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(kimiApiUrl))
@@ -148,6 +157,9 @@ public class AIAssistantController {
                 .build();
 
             HttpResponse<String> resp = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (resp.statusCode() != 200) {
+                return ApiResponse.error("Kimi API 错误 (HTTP " + resp.statusCode() + "): " + resp.body(), resp.statusCode());
+            }
             return ApiResponse.ok(Map.of("response", resp.body()));
         } catch (Exception e) {
             return ApiResponse.error("AI 请求失败: " + e.getMessage(), 500);
@@ -175,7 +187,6 @@ public class AIAssistantController {
         body.put("model", model);
         body.put("messages", messages);
         body.put("stream", stream);
-        body.put("temperature", 0.7);
         body.put("user", "user_" + userId);
 
         return mapper.writeValueAsString(body);

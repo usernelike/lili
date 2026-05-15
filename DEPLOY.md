@@ -47,24 +47,34 @@ mysql -u root -e "CREATE DATABASE IF NOT EXISTS lili_hub;"
 - 安装时创建 root 密码
 - 创建数据库：`CREATE DATABASE lili_hub;`
 
-### 3. 配置数据库连接
+### 3. 配置环境变量
 
-创建 `packages/backend-java/.env` 文件（不会提交到 Git）：
+在 `packages/backend-java/` 目录下已有 `.env` 文件，打开它填写以下值：
 
-```properties
-MYSQL_URL=jdbc:mysql://localhost:3306/lili_hub?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-MYSQL_USER=root
-MYSQL_PASSWORD=你的密码
+```bash
+# 必填：从 https://platform.moonshot.cn/ 获取 API Key
+export KIMI_API_KEY=sk-你的Key
+
+# 必填（如果你的本地 MySQL 有密码）
+export MYSQL_PASSWORD=你的密码
+
+# 可选：如果你用 Docker 或其他非本地 MySQL，取消注释并修改
+# export MYSQL_URL=jdbc:mysql://localhost:3306/lili_hub?...
 ```
 
-Spring Boot 会自动读取同目录下的 `.env` 文件（如果安装了 dotenv），或者你可以直接设置环境变量。
+> `.env` 已被 `.gitignore` 忽略，不会提交到 Git。
 
 ### 4. 运行 Java 后端
 
 ```bash
 cd packages/backend-java
-mvn spring-boot:run
+./dev.sh
 ```
+
+这个脚本会自动：
+1. 检查 `.env` 文件是否存在
+2. 加载环境变量
+3. 启动 Spring Boot（`mvn spring-boot:run`）
 
 服务启动后访问：
 - http://localhost:8080/health
@@ -72,11 +82,39 @@ mvn spring-boot:run
 
 ### 5. 运行前端（开发模式）
 
+在项目根目录另开一个终端：
+
 ```bash
 pnpm dev
 ```
 
 前端在 http://localhost:3000，通过 Vite proxy 访问 Java 后端。
+
+---
+
+## 环境变量总览
+
+`application.properties` 中所有 `${...}` 占位符对应的配置：
+
+| 配置项 | 环境变量名 | 本地开发 | 线上 Render |
+|--------|-----------|---------|------------|
+| 服务端口 | `PORT` | 默认 `8080` | `render.yaml` 已配置 |
+| 数据库地址 | `MYSQL_URL` | 本地 MySQL | **Render 控制台设置** |
+| 数据库用户 | `MYSQL_USER` | `root` | **Render 控制台设置** |
+| 数据库密码 | `MYSQL_PASSWORD` | 本地密码 | **Render 控制台设置** |
+| Kimi API Key | `KIMI_API_KEY` | `.env` 文件或环境变量 | **Render 控制台设置** |
+| Kimi API 地址 | `KIMI_API_URL` | 默认 Moonshot | `render.yaml` 已配置，可覆盖 |
+| Kimi 模型 | `KIMI_MODEL` | 默认 `kimi-k2.6` | `render.yaml` 已配置，可覆盖 |
+
+**本地开发**：在 `packages/backend-java/` 下创建 `.env` 文件（已被 `.gitignore` 忽略）：
+```properties
+MYSQL_URL=jdbc:mysql://localhost:3306/lili_hub?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+MYSQL_USER=root
+MYSQL_PASSWORD=你的密码
+KIMI_API_KEY=sk-xxx
+```
+
+**线上部署**：所有敏感信息通过 Render 控制台的环境变量配置，不要写入代码。
 
 ---
 
@@ -115,14 +153,18 @@ git push origin main
 | **Runtime** | `Docker`（会自动识别 Dockerfile） |
 | **Plan** | `Free` |
 
-5. 添加环境变量：
+5. 添加环境变量（在 Render Dashboard → 你的 Service → Environment 标签页）：
 
-| Key | Value |
-|-----|-------|
-| `PORT` | `8080` |
-| `MYSQL_URL` | `jdbc:mysql://aws.connect.psdb.cloud/lili_hub?sslMode=VERIFY_IDENTITY` |
-| `MYSQL_USER` | PlanetScale 用户名 |
-| `MYSQL_PASSWORD` | PlanetScale 密码 |
+| Key | 必填 | 说明 |
+|-----|------|------|
+| `MYSQL_URL` | ✅ | 数据库连接地址，如 `jdbc:mysql://xxx` |
+| `MYSQL_USER` | ✅ | 数据库用户名 |
+| `MYSQL_PASSWORD` | ✅ | 数据库密码 |
+| `KIMI_API_KEY` | ✅ | 从 [Kimi 开放平台](https://platform.moonshot.cn/) 获取的 API Key |
+| `KIMI_API_URL` | ❌ | 默认 `https://api.moonshot.cn/v1/chat/completions`，一般不用改 |
+| `KIMI_MODEL` | ❌ | 默认 `kimi-k2.6`，可换其他模型如 `moonshot-v1-8k` |
+
+> ⚠️ **安全提醒**：这些敏感信息**不要写在代码里**，只在 Render 控制台配置。`render.yaml` 里已经把敏感字段的 `value` 留空了。
 
 6. 点击 **Create Web Service**
 

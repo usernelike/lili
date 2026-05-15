@@ -1,0 +1,9 @@
+{
+  "name": "@platform/backend-java",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "bash dev.sh",
+    "build": "mvn clean package -DskipTests"
+  }
+}

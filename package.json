@@ -4,7 +4,7 @@
   "description": "多功能集成平台 - 支持企业信息查询、金融数据等",
   "private": true,
   "scripts": {
-    "dev": "pnpm -r --parallel dev",
+    "dev": "pnpm --parallel --filter @platform/frontend --filter @platform/backend-java --filter @platform/shared dev",
     "build": "pnpm -r build && mkdir -p packages/backend-java/src/main/resources/static && cp -r packages/frontend/dist/* packages/backend-java/src/main/resources/static/",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",

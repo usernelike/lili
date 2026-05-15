@@ -5,11 +5,24 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     envVars:
+      # 应用基础配置
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 8080
+
+      # 数据库配置（⚠️ 敏感信息，建议在 Render 控制台单独设置）
       - key: MYSQL_URL
-        value: jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/lili_hub?useSSL=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        # value: jdbc:mysql://xxx
       - key: MYSQL_USER
-        value: 2mBZMNzdBRWBLui.root
+        # value: xxx
+      - key: MYSQL_PASSWORD
+        # 必填：数据库密码，在 Render 控制台设置
+
+      # Kimi AI 配置
+      - key: KIMI_API_KEY
+        # 必填：从 https://platform.moonshot.cn/ 获取，在 Render 控制台设置
+      - key: KIMI_API_URL
+        value: https://api.moonshot.cn/v1/chat/completions
+      - key: KIMI_MODEL
+        value: kimi-k2.6

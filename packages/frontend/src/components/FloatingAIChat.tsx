@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageSquare, X, Send, Bot, User, Loader2 } from 'lucide-react'
 import { apiFetch } from '../utils/api'
+import { useNavigate } from 'react-router-dom'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -8,7 +9,43 @@ interface ChatMessage {
   id: string
 }
 
+function parseContent(text: string, navigate: (path: string) => void): React.ReactNode {
+  const regex = /\[([^\]]+)\]\(([^)]+)\)/g
+  const parts: React.ReactNode[] = []
+  let lastIndex = 0
+  let match
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index))
+    }
+    const label = match[1]
+    const path = match[2]
+    parts.push(
+      <a
+        key={match.index}
+        href={path}
+        onClick={(e) => {
+          e.preventDefault()
+          navigate(path)
+        }}
+        style={{ color: 'var(--accent-cyan)', textDecoration: 'underline', cursor: 'pointer' }}
+      >
+        {label}
+      </a>
+    )
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+
+  return parts.length === 1 && typeof parts[0] === 'string' ? parts[0] : parts
+}
+
 export default function FloatingAIChat() {
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -68,6 +105,15 @@ export default function FloatingAIChat() {
         body: JSON.stringify({ message: userMsg.content, history }),
       })
 
+      if (!res.ok) {
+        const errorText = await res.text()
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantId ? { ...m, content: '请求失败 (' + res.status + '): ' + errorText } : m))
+        )
+        setIsStreaming(false)
+        return
+      }
+
       const reader = res.body?.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
@@ -88,6 +134,7 @@ export default function FloatingAIChat() {
         const lines = buffer.split('\n')
         buffer = lines.pop() || ''
 
+        let contentDelta = ''
         for (const line of lines) {
           const trimmed = line.trim()
           if (!trimmed.startsWith('data: ')) continue
@@ -98,15 +145,19 @@ export default function FloatingAIChat() {
             const parsed = JSON.parse(data)
             const delta = parsed.choices?.[0]?.delta?.content
             if (delta) {
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === assistantId ? { ...m, content: m.content + delta } : m
-                )
-              )
+              contentDelta += delta
             }
           } catch {
             // ignore parse error
           }
+        }
+
+        if (contentDelta) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId ? { ...m, content: m.content + contentDelta } : m
+            )
+          )
         }
       }
     } catch (err) {
@@ -242,9 +293,10 @@ export default function FloatingAIChat() {
                     whiteSpace: 'pre-wrap',
                   }}
                 >
-                  {msg.content}
-                  {msg.role === 'assistant' && msg.content === '' && isStreaming && (
+                  {msg.role === 'assistant' && msg.content === '' && isStreaming ? (
                     <Loader2 size={14} color="var(--accent-cyan)" className="spin" />
+                  ) : (
+                    parseContent(msg.content, navigate)
                   )}
                 </div>
               </div>
