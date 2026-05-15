@@ -128,6 +128,7 @@ export default function LoginPage() {
         <div
           style={{
             position: 'relative',
+            bottom: '20%',
             zIndex: 1,
             display: 'flex',
             justifyContent: 'center',
@@ -143,12 +144,11 @@ export default function LoginPage() {
         </div>
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 24 }}>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
-            数据驱动决策
-          </span>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
-            投资更有底气
-          </span>
+          <a href="https://github.com/arsh342/careercompass" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
+              Login-Github
+            </span>
+          </a>
         </div>
       </div>
 
@@ -195,7 +195,9 @@ export default function LoginPage() {
               </label>
               <input
                 type="text"
-                placeholder="输入用户名"
+                name="login-username"
+                autoComplete="username"
+                placeholder="请输入用户名"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 onFocus={handleFocus}
@@ -229,8 +231,10 @@ export default function LoginPage() {
               </label>
               <div style={{ position: 'relative' }}>
                 <input
+                  name="login-password"
+                  autoComplete="current-password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="输入密码"
+                  placeholder="请输入密码"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={handleFocus}

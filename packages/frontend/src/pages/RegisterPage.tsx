@@ -131,6 +131,7 @@ export default function RegisterPage() {
           style={{
             position: 'relative',
             zIndex: 1,
+            bottom: '20%',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'flex-end',
@@ -145,12 +146,11 @@ export default function RegisterPage() {
         </div>
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 24 }}>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
-            数据驱动决策
-          </span>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
-            投资更有底气
-          </span>
+          <a href="https://github.com/arsh342/careercompass" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
+              Login-Github
+            </span>
+          </a>
         </div>
       </div>
 
@@ -197,6 +197,8 @@ export default function RegisterPage() {
               </label>
               <input
                 type="text"
+                name="reg-username"
+                autoComplete="username"
                 placeholder="输入用户名"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -230,6 +232,8 @@ export default function RegisterPage() {
               </label>
               <input
                 type="text"
+                name="reg-phone"
+                autoComplete="tel"
                 placeholder="输入手机号"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -247,6 +251,9 @@ export default function RegisterPage() {
                   outline: 'none',
                 }}
               />
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6, marginBottom: 0 }}>
+                手机号仅用于账号关联，登录请使用用户名
+              </p>
             </div>
 
             <div>
@@ -263,6 +270,8 @@ export default function RegisterPage() {
               </label>
               <div style={{ position: 'relative' }}>
                 <input
+                  name="reg-password"
+                  autoComplete="new-password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="至少6位密码"
                   value={password}
@@ -314,6 +323,8 @@ export default function RegisterPage() {
                 确认密码
               </label>
               <input
+                name="reg-confirm-password"
+                autoComplete="new-password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="再次输入密码"
                 value={confirmPassword}
