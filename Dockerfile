@@ -14,7 +14,8 @@ RUN mkdir -p packages/backend-java/src/main/resources/static && cp -r packages/f
 FROM maven:3.9-eclipse-temurin-21-alpine AS backend
 WORKDIR /app
 COPY packages/backend-java/pom.xml .
-COPY --from=frontend /app/packages/backend-java/src ./src
+COPY packages/backend-java/src ./src
+COPY --from=frontend /app/packages/backend-java/src/main/resources/static ./src/main/resources/static
 RUN mvn clean package -DskipTests
 
 # Stage 3: Run
