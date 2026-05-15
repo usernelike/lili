@@ -160,7 +160,7 @@ export default function FloatingAIChat() {
           style={{
             position: 'fixed',
             right: 24,
-            bottom: 92,
+            bottom: 142,
             zIndex: 9998,
             width: 380,
             maxHeight: 'calc(100vh - 120px)',
