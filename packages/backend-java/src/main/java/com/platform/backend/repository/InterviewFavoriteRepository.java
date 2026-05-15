@@ -35,7 +35,7 @@ public class InterviewFavoriteRepository {
 
     public int insert(int userId, String itemId, String question, String category, String note) {
         return jdbc.update(
-            "INSERT INTO interview_favorites (user_id, item_id, question, category, note) VALUES (?, ?, ?, ?, ?)",
+            "INSERT IGNORE INTO interview_favorites (user_id, item_id, question, category, note) VALUES (?, ?, ?, ?, ?)",
             userId, itemId, question, category, note
         );
     }
