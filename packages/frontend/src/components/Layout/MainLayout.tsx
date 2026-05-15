@@ -1,13 +1,13 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { BarChart3, Building2, Home, Database } from 'lucide-react'
+import { BarChart3, Building2, Home, Database, BookOpen } from 'lucide-react'
 
 const navItems = [
   { path: '/', label: '首页', icon: Home },
   { path: '/enterprise', label: '企业查询', icon: Building2 },
   { path: '/financial', label: '金融数据', icon: BarChart3 },
   { path: '/lili', label: 'lili数据源', icon: Database },
-  // { path: '/interview', label: '面试知识库', icon: BookOpen },
+  { path: '/interview', label: '面试知识库', icon: BookOpen },
 ]
 
 export default function MainLayout() {

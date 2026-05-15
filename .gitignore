@@ -44,3 +44,4 @@ packages/backend-java/target/
 *.ear
 
 *.db
+packages/backend-java/src/main/resources/static/

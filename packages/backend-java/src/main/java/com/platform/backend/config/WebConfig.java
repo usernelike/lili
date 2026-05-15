@@ -19,15 +19,9 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/**")
-            .addResourceLocations("classpath:/static/")
-            .setCachePeriod(3600);
-    }
-
-    @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         // SPA fallback: all non-API routes go to index.html
+        registry.addViewController("/").setViewName("forward:/index.html");
         registry.addViewController("/{path:[^\\.]*}")
             .setViewName("forward:/index.html");
         registry.addViewController("/**/{path:[^\\.]*}")
