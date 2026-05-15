@@ -20,7 +20,10 @@ public class InterviewFavoriteService {
     }
 
     public void add(String itemId, String question, String category, String note) {
-        repo.insert(itemId, question, category, note);
+        var existing = repo.findByItemId(itemId);
+        if (existing.isEmpty()) {
+            repo.insert(itemId, question, category, note);
+        }
     }
 
     public boolean remove(int id) {

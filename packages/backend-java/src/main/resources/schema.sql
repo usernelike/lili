@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS interview_favorites (
   question TEXT NOT NULL,
   category VARCHAR(255) NOT NULL,
   note TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_item_id (item_id)
 );
 
 CREATE TABLE IF NOT EXISTS watchlist_items (

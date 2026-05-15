@@ -29,6 +29,10 @@ public class InterviewFavoriteRepository {
         return jdbc.query("SELECT * FROM interview_favorites ORDER BY created_at DESC", mapper);
     }
 
+    public List<InterviewFavorite> findByItemId(String itemId) {
+        return jdbc.query("SELECT * FROM interview_favorites WHERE item_id = ?", mapper, itemId);
+    }
+
     public int insert(String itemId, String question, String category, String note) {
         return jdbc.update(
             "INSERT INTO interview_favorites (item_id, question, category, note) VALUES (?, ?, ?, ?)",

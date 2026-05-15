@@ -13,11 +13,11 @@ import interviewData from '../data/interviewData'
 
 interface FavoriteItem {
   id: number
-  item_id: string
+  itemId: string
   question: string
   category: string
   note: string | null
-  created_at: string
+  createdAt: string
 }
 
 export default function InterviewKnowledgeBase() {
@@ -33,7 +33,7 @@ export default function InterviewKnowledgeBase() {
     try {
       const res = await fetch('/api/interview/favorites')
       const json = await res.json()
-      if (json.success && json.data) {
+      if (json.success && Array.isArray(json.data)) {
         setFavorites(json.data)
       }
     } catch (err) {
@@ -46,12 +46,12 @@ export default function InterviewKnowledgeBase() {
   }, [loadFavorites])
 
   const isFavorited = useCallback(
-    (itemId: string) => favorites.some((f) => f.item_id === itemId),
+    (itemId: string) => favorites.some((f) => f.itemId === itemId),
     [favorites]
   )
 
   const getFavoriteId = useCallback(
-    (itemId: string) => favorites.find((f) => f.item_id === itemId)?.id,
+    (itemId: string) => favorites.find((f) => f.itemId === itemId)?.id,
     [favorites]
   )
 
@@ -115,7 +115,7 @@ export default function InterviewKnowledgeBase() {
         .filter((cat) => cat.items.length > 0)
     }
     if (showOnlyFavorites) {
-      const favIds = new Set(favorites.map((f) => f.item_id))
+      const favIds = new Set(favorites.map((f) => f.itemId))
       data = data
         .map((cat) => ({
           ...cat,
