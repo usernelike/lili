@@ -70,7 +70,7 @@ public class StockService {
         new CommodityInfo("hf_NG", "NYMEX天然气")
     );
 
-    private record StockInfo(String code, String name, String market) {}
+    public record StockInfo(String code, String name, String market) {}
     private record CommodityInfo(String code, String name) {}
 
     @SuppressWarnings("unchecked")

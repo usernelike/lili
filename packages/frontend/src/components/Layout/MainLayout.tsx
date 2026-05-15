@@ -1,6 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { BarChart3, Building2, Home, Database, BookOpen, LogOut, User } from 'lucide-react'
+import FloatingAIChat from '../FloatingAIChat'
 
 const navItems = [
   { path: '/', label: '首页', icon: Home },
@@ -192,6 +193,9 @@ export default function MainLayout() {
       <main>
         <Outlet />
       </main>
+
+      {/* AI Assistant */}
+      <FloatingAIChat />
     </div>
   )
 }
