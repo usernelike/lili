@@ -1,0 +1,17 @@
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/BackendJavaApplication.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/config/WebConfig.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/controller/FinancialController.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/controller/HealthController.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/controller/InterviewController.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/controller/PositionController.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/controller/WatchlistController.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/model/ApiResponse.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/model/InterviewFavorite.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/model/PositionItem.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/model/WatchlistItem.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/repository/InterviewFavoriteRepository.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/repository/PositionRepository.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/repository/WatchlistRepository.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/service/InterviewFavoriteService.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/service/PositionService.java
+/Users/li/Desktop/kimi code/packages/backend-java/src/main/java/com/platform/backend/service/WatchlistService.java
