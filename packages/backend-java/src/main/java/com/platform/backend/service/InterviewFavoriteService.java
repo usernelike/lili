@@ -15,18 +15,18 @@ public class InterviewFavoriteService {
         this.repo = repo;
     }
 
-    public List<InterviewFavorite> getAll() {
-        return repo.findAll();
+    public List<InterviewFavorite> getAll(int userId) {
+        return repo.findAllByUserId(userId);
     }
 
-    public void add(String itemId, String question, String category, String note) {
-        var existing = repo.findByItemId(itemId);
+    public void add(int userId, String itemId, String question, String category, String note) {
+        var existing = repo.findByItemIdAndUserId(itemId, userId);
         if (existing.isEmpty()) {
-            repo.insert(itemId, question, category, note);
+            repo.insert(userId, itemId, question, category, note);
         }
     }
 
-    public boolean remove(int id) {
-        return repo.deleteById(id) > 0;
+    public boolean remove(int userId, int id) {
+        return repo.deleteByIdAndUserId(id, userId) > 0;
     }
 }

@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { BarChart3, Building2, Home, Database, BookOpen } from 'lucide-react'
+import { BarChart3, Building2, Home, Database, BookOpen, LogOut, User } from 'lucide-react'
 
 const navItems = [
   { path: '/', label: '首页', icon: Home },
@@ -14,7 +14,20 @@ export default function MainLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
+  const [token, setToken] = useState(localStorage.getItem('token'))
   const isHome = location.pathname === '/'
+
+  useEffect(() => {
+    const check = () => setToken(localStorage.getItem('token'))
+    window.addEventListener('storage', check)
+    return () => window.removeEventListener('storage', check)
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    setToken(null)
+    navigate('/login')
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,7 +96,7 @@ export default function MainLayout() {
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path
             const Icon = item.icon
@@ -124,6 +137,54 @@ export default function MainLayout() {
               </button>
             )
           })}
+          {token ? (
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '10px 16px',
+                borderRadius: 10,
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-muted)',
+                fontSize: 14,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#ef4444'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--text-muted)'
+              }}
+            >
+              <LogOut size={16} />
+              退出
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/login')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '10px 16px',
+                borderRadius: 10,
+                border: 'none',
+                background: 'rgba(0, 212, 255, 0.1)',
+                color: 'var(--accent-cyan)',
+                fontSize: 14,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              <User size={16} />
+              登录
+            </button>
+          )}
         </div>
       </nav>
 

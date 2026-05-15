@@ -2,12 +2,18 @@ package com.platform.backend.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    private final AuthInterceptor authInterceptor;
+
+    public WebConfig(AuthInterceptor authInterceptor) {
+        this.authInterceptor = authInterceptor;
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -15,12 +21,19 @@ public class WebConfig implements WebMvcConfigurer {
             .allowedOrigins("*")
             .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             .allowedHeaders("*")
+            .exposedHeaders("Authorization")
             .maxAge(3600);
     }
 
     @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(authInterceptor)
+            .addPathPatterns("/api/**")
+            .excludePathPatterns("/api/auth/**", "/api/health");
+    }
+
+    @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // SPA fallback: all non-API routes go to index.html
         registry.addViewController("/").setViewName("forward:/index.html");
         registry.addViewController("/{path:[^\\.]*}")
             .setViewName("forward:/index.html");

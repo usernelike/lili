@@ -25,22 +25,22 @@ public class InterviewFavoriteRepository {
         rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null
     );
 
-    public List<InterviewFavorite> findAll() {
-        return jdbc.query("SELECT * FROM interview_favorites ORDER BY created_at DESC", mapper);
+    public List<InterviewFavorite> findAllByUserId(int userId) {
+        return jdbc.query("SELECT * FROM interview_favorites WHERE user_id = ? ORDER BY created_at DESC", mapper, userId);
     }
 
-    public List<InterviewFavorite> findByItemId(String itemId) {
-        return jdbc.query("SELECT * FROM interview_favorites WHERE item_id = ?", mapper, itemId);
+    public List<InterviewFavorite> findByItemIdAndUserId(String itemId, int userId) {
+        return jdbc.query("SELECT * FROM interview_favorites WHERE item_id = ? AND user_id = ?", mapper, itemId, userId);
     }
 
-    public int insert(String itemId, String question, String category, String note) {
+    public int insert(int userId, String itemId, String question, String category, String note) {
         return jdbc.update(
-            "INSERT INTO interview_favorites (item_id, question, category, note) VALUES (?, ?, ?, ?)",
-            itemId, question, category, note
+            "INSERT INTO interview_favorites (user_id, item_id, question, category, note) VALUES (?, ?, ?, ?, ?)",
+            userId, itemId, question, category, note
         );
     }
 
-    public int deleteById(int id) {
-        return jdbc.update("DELETE FROM interview_favorites WHERE id = ?", id);
+    public int deleteByIdAndUserId(int id, int userId) {
+        return jdbc.update("DELETE FROM interview_favorites WHERE id = ? AND user_id = ?", id, userId);
     }
 }

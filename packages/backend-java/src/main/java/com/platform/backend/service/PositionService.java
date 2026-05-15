@@ -15,29 +15,28 @@ public class PositionService {
         this.repo = repo;
     }
 
-    public List<PositionItem> getAll() {
-        return repo.findAll();
+    public List<PositionItem> getAll(int userId) {
+        return repo.findAllByUserId(userId);
     }
 
-    public PositionItem add(String code, String name, String market, Double costPrice, Double shares, String note) {
-        // 如果已存在则合并（加权平均成本）
-        var existing = repo.findByCode(code);
+    public PositionItem add(int userId, String code, String name, String market, Double costPrice, Double shares, String note) {
+        var existing = repo.findByCodeAndUserId(code, userId);
         if (existing != null) {
             double newShares = existing.shares() + shares;
             double newCostPrice = (existing.costPrice() * existing.shares() + costPrice * shares) / newShares;
-            repo.updateByCode(code, newCostPrice, newShares, note != null ? note : existing.note());
-            return repo.findByCode(code);
+            repo.updateByCodeAndUserId(userId, code, newCostPrice, newShares, note != null ? note : existing.note());
+            return repo.findByCodeAndUserId(code, userId);
         }
-        repo.insert(code, name, market, costPrice, shares, note);
-        return repo.findByCode(code);
+        repo.insert(userId, code, name, market, costPrice, shares, note);
+        return repo.findByCodeAndUserId(code, userId);
     }
 
-    public PositionItem update(String code, Double costPrice, Double shares, String note) {
-        repo.updateByCode(code, costPrice, shares, note);
-        return repo.findByCode(code);
+    public PositionItem update(int userId, String code, Double costPrice, Double shares, String note) {
+        repo.updateByCodeAndUserId(userId, code, costPrice, shares, note);
+        return repo.findByCodeAndUserId(code, userId);
     }
 
-    public boolean remove(String code) {
-        return repo.deleteByCode(code) > 0;
+    public boolean remove(int userId, String code) {
+        return repo.deleteByCodeAndUserId(userId, code) > 0;
     }
 }

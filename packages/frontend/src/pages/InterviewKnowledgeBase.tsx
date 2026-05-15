@@ -1,3 +1,4 @@
+import { apiFetch } from '../utils/api'
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import {
   BookOpen,
@@ -31,7 +32,7 @@ export default function InterviewKnowledgeBase() {
   // Load favorites from backend
   const loadFavorites = useCallback(async () => {
     try {
-      const res = await fetch('/api/interview/favorites')
+      const res = await apiFetch('/api/interview/favorites')
       const json = await res.json()
       if (json.success && Array.isArray(json.data)) {
         setFavorites(json.data)
@@ -63,10 +64,10 @@ export default function InterviewKnowledgeBase() {
         if (isFavorited(item.id)) {
           const favId = getFavoriteId(item.id)
           if (favId) {
-            await fetch(`/api/interview/favorites/${favId}`, { method: 'DELETE' })
+            await apiFetch(`/api/interview/favorites/${favId}`, { method: 'DELETE' })
           }
         } else {
-          await fetch('/api/interview/favorites', {
+          await apiFetch('/api/interview/favorites', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

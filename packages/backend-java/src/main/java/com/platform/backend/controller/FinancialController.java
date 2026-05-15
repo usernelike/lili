@@ -2,6 +2,7 @@ package com.platform.backend.controller;
 
 import com.platform.backend.model.*;
 import com.platform.backend.service.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,6 +24,10 @@ public class FinancialController {
         this.technicalService = technicalService;
         this.watchlistService = watchlistService;
         this.positionService = positionService;
+    }
+
+    private int getUserId(HttpServletRequest req) {
+        return (int) req.getAttribute("userId");
     }
 
     @GetMapping("/stocks")
@@ -72,19 +77,19 @@ public class FinancialController {
         return ApiResponse.ok(stockService.getCommodities());
     }
 
-    // ====== Watchlist (兼容前端旧路由) ======
+    // ====== Watchlist (compatible frontend routes) ======
 
     @GetMapping("/watchlist")
-    public ApiResponse<?> getWatchlist() {
-        return ApiResponse.ok(watchlistService.getAll());
+    public ApiResponse<?> getWatchlist(HttpServletRequest req) {
+        return ApiResponse.ok(watchlistService.getAll(getUserId(req)));
     }
 
     @PostMapping("/watchlist")
-    public ApiResponse<?> addWatchlist(@RequestBody Map<String, Object> body) {
+    public ApiResponse<?> addWatchlist(@RequestBody Map<String, Object> body, HttpServletRequest req) {
         String code = (String) body.get("code");
         String name = (String) body.get("name");
         if (code == null || name == null) return ApiResponse.error("缺少 code 或 name", 400);
-        return ApiResponse.ok(watchlistService.add(code, name,
+        return ApiResponse.ok(watchlistService.add(getUserId(req), code, name,
             (String) body.getOrDefault("market", ""),
             (String) body.get("note"),
             (String) body.get("category"),
@@ -93,27 +98,27 @@ public class FinancialController {
     }
 
     @PatchMapping("/watchlist/{code}")
-    public ApiResponse<?> updateWatchlist(@PathVariable String code, @RequestBody Map<String, String> body) {
-        var item = watchlistService.update(code, body.get("note"), body.get("category"));
+    public ApiResponse<?> updateWatchlist(@PathVariable String code, @RequestBody Map<String, String> body, HttpServletRequest req) {
+        var item = watchlistService.update(getUserId(req), code, body.get("note"), body.get("category"));
         if (item == null) return ApiResponse.error("自选股不存在", 404);
         return ApiResponse.ok(item);
     }
 
     @DeleteMapping("/watchlist/{code}")
-    public ApiResponse<?> deleteWatchlist(@PathVariable String code) {
-        if (!watchlistService.remove(code)) return ApiResponse.error("自选股不存在", 404);
+    public ApiResponse<?> deleteWatchlist(@PathVariable String code, HttpServletRequest req) {
+        if (!watchlistService.remove(getUserId(req), code)) return ApiResponse.error("自选股不存在", 404);
         return ApiResponse.ok(Map.of("removed", true));
     }
 
-    // ====== Positions (兼容前端旧路由) ======
+    // ====== Positions (compatible frontend routes) ======
 
     @GetMapping("/positions")
-    public ApiResponse<?> getPositions() {
-        return ApiResponse.ok(positionService.getAll());
+    public ApiResponse<?> getPositions(HttpServletRequest req) {
+        return ApiResponse.ok(positionService.getAll(getUserId(req)));
     }
 
     @PostMapping("/positions")
-    public ApiResponse<?> addPosition(@RequestBody Map<String, Object> body) {
+    public ApiResponse<?> addPosition(@RequestBody Map<String, Object> body, HttpServletRequest req) {
         String code = (String) body.get("code");
         String name = (String) body.get("name");
         Number costPrice = (Number) body.get("costPrice");
@@ -121,16 +126,16 @@ public class FinancialController {
         if (code == null || name == null || costPrice == null || shares == null) {
             return ApiResponse.error("缺少必要参数", 400);
         }
-        return ApiResponse.ok(positionService.add(code, name,
+        return ApiResponse.ok(positionService.add(getUserId(req), code, name,
             (String) body.getOrDefault("market", ""),
             costPrice.doubleValue(), shares.doubleValue(), (String) body.get("note")));
     }
 
     @PatchMapping("/positions/{code}")
-    public ApiResponse<?> updatePosition(@PathVariable String code, @RequestBody Map<String, Object> body) {
+    public ApiResponse<?> updatePosition(@PathVariable String code, @RequestBody Map<String, Object> body, HttpServletRequest req) {
         Number costPrice = (Number) body.get("costPrice");
         Number shares = (Number) body.get("shares");
-        var item = positionService.update(code,
+        var item = positionService.update(getUserId(req), code,
             costPrice != null ? costPrice.doubleValue() : null,
             shares != null ? shares.doubleValue() : null,
             (String) body.get("note"));
@@ -139,16 +144,17 @@ public class FinancialController {
     }
 
     @DeleteMapping("/positions/{code}")
-    public ApiResponse<?> deletePosition(@PathVariable String code) {
-        if (!positionService.remove(code)) return ApiResponse.error("持仓不存在", 404);
+    public ApiResponse<?> deletePosition(@PathVariable String code, HttpServletRequest req) {
+        if (!positionService.remove(getUserId(req), code)) return ApiResponse.error("持仓不存在", 404);
         return ApiResponse.ok(Map.of("removed", true));
     }
 
     // ====== Positions Summary ======
 
     @GetMapping("/positions/summary")
-    public ApiResponse<?> getPositionsSummary() {
-        List<PositionItem> positions = positionService.getAll();
+    public ApiResponse<?> getPositionsSummary(HttpServletRequest req) {
+        int userId = getUserId(req);
+        List<PositionItem> positions = positionService.getAll(userId);
         if (positions.isEmpty()) {
             return ApiResponse.ok(Map.of("positions", List.of(), "totalCost", 0, "totalValue", 0, "totalProfit", 0, "totalProfitPercent", 0));
         }

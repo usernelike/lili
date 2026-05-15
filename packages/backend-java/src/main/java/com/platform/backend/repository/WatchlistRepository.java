@@ -28,33 +28,33 @@ public class WatchlistRepository {
         rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null
     );
 
-    public List<WatchlistItem> findAll() {
-        return jdbc.query("SELECT * FROM watchlist_items ORDER BY created_at DESC", mapper);
+    public List<WatchlistItem> findAllByUserId(int userId) {
+        return jdbc.query("SELECT * FROM watchlist_items WHERE user_id = ? ORDER BY created_at DESC", mapper, userId);
     }
 
-    public WatchlistItem findByCode(String code) {
-        var list = jdbc.query("SELECT * FROM watchlist_items WHERE code = ?", mapper, code);
+    public WatchlistItem findByCodeAndUserId(String code, int userId) {
+        var list = jdbc.query("SELECT * FROM watchlist_items WHERE code = ? AND user_id = ?", mapper, code, userId);
         return list.isEmpty() ? null : list.get(0);
     }
 
-    public int upsert(String code, String name, String market, String note, String category, Double holdCost, Double holdQuantity) {
+    public int upsert(int userId, String code, String name, String market, String note, String category, Double holdCost, Double holdQuantity) {
         return jdbc.update(
-            "INSERT INTO watchlist_items (code, name, market, note, category, hold_cost, hold_quantity) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+            "INSERT INTO watchlist_items (user_id, code, name, market, note, category, hold_cost, hold_quantity) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
             "ON DUPLICATE KEY UPDATE name = VALUES(name), market = VALUES(market), " +
             "note = VALUES(note), category = VALUES(category), hold_cost = VALUES(hold_cost), hold_quantity = VALUES(hold_quantity)",
-            code, name, market, note, category, holdCost, holdQuantity
+            userId, code, name, market, note, category, holdCost, holdQuantity
         );
     }
 
-    public int updateByCode(String code, String note, String category) {
+    public int updateByCodeAndUserId(int userId, String code, String note, String category) {
         return jdbc.update(
-            "UPDATE watchlist_items SET note = ?, category = ? WHERE code = ?",
-            note, category, code
+            "UPDATE watchlist_items SET note = ?, category = ? WHERE code = ? AND user_id = ?",
+            note, category, code, userId
         );
     }
 
-    public int deleteByCode(String code) {
-        return jdbc.update("DELETE FROM watchlist_items WHERE code = ?", code);
+    public int deleteByCodeAndUserId(int userId, String code) {
+        return jdbc.update("DELETE FROM watchlist_items WHERE code = ? AND user_id = ?", code, userId);
     }
 }

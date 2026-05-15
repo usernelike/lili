@@ -28,30 +28,30 @@ public class PositionRepository {
         rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null
     );
 
-    public List<PositionItem> findAll() {
-        return jdbc.query("SELECT * FROM positions ORDER BY created_at DESC", mapper);
+    public List<PositionItem> findAllByUserId(int userId) {
+        return jdbc.query("SELECT * FROM positions WHERE user_id = ? ORDER BY created_at DESC", mapper, userId);
     }
 
-    public PositionItem findByCode(String code) {
-        var list = jdbc.query("SELECT * FROM positions WHERE code = ?", mapper, code);
+    public PositionItem findByCodeAndUserId(String code, int userId) {
+        var list = jdbc.query("SELECT * FROM positions WHERE code = ? AND user_id = ?", mapper, code, userId);
         return list.isEmpty() ? null : list.get(0);
     }
 
-    public int insert(String code, String name, String market, Double costPrice, Double shares, String note) {
+    public int insert(int userId, String code, String name, String market, Double costPrice, Double shares, String note) {
         return jdbc.update(
-            "INSERT INTO positions (code, name, market, cost_price, shares, note) VALUES (?, ?, ?, ?, ?, ?)",
-            code, name, market, costPrice, shares, note
+            "INSERT INTO positions (user_id, code, name, market, cost_price, shares, note) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            userId, code, name, market, costPrice, shares, note
         );
     }
 
-    public int updateByCode(String code, Double costPrice, Double shares, String note) {
+    public int updateByCodeAndUserId(int userId, String code, Double costPrice, Double shares, String note) {
         return jdbc.update(
-            "UPDATE positions SET cost_price = ?, shares = ?, note = ? WHERE code = ?",
-            costPrice, shares, note, code
+            "UPDATE positions SET cost_price = ?, shares = ?, note = ? WHERE code = ? AND user_id = ?",
+            costPrice, shares, note, code, userId
         );
     }
 
-    public int deleteByCode(String code) {
-        return jdbc.update("DELETE FROM positions WHERE code = ?", code);
+    public int deleteByCodeAndUserId(int userId, String code) {
+        return jdbc.update("DELETE FROM positions WHERE code = ? AND user_id = ?", code, userId);
     }
 }

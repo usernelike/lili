@@ -1,3 +1,4 @@
+import { apiFetch } from '../utils/api'
 import { useState, useCallback, useEffect } from 'react'
 
 export type LiliQueryType = 'realtime_price' | 'realtime_tech' | 'open_summary' | 'close_summary'
@@ -38,7 +39,7 @@ export function useLiliQuery() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/financial/lili/query', {
+      const res = await apiFetch('/api/financial/lili/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
@@ -71,7 +72,7 @@ export function useLiliWatchlist() {
   const fetchItems = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/watchlist')
+      const res = await apiFetch('/api/watchlist')
       const json = await res.json()
       if (json.success && json.data) {
         const mapped = json.data.map((row: Record<string, unknown>) => ({
@@ -98,7 +99,7 @@ export function useLiliWatchlist() {
 
   const addItem = useCallback(async (item: LiliWatchlistItem) => {
     try {
-      const res = await fetch('/api/watchlist', {
+      const res = await apiFetch('/api/watchlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -124,7 +125,7 @@ export function useLiliWatchlist() {
 
   const removeItem = useCallback(async (code: string) => {
     try {
-      const res = await fetch(`/api/watchlist/${encodeURIComponent(code)}`, {
+      const res = await apiFetch(`/api/watchlist/${encodeURIComponent(code)}`, {
         method: 'DELETE',
       })
       const json = await res.json()
@@ -140,7 +141,7 @@ export function useLiliWatchlist() {
 
   const updateItem = useCallback(async (code: string, updates: Partial<LiliWatchlistItem>) => {
     try {
-      const res = await fetch(`/api/watchlist/${encodeURIComponent(code)}`, {
+      const res = await apiFetch(`/api/watchlist/${encodeURIComponent(code)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

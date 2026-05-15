@@ -1,3 +1,4 @@
+import { apiFetch } from '../utils/api'
 import { useState, useEffect, useCallback } from 'react'
 
 export interface StockData {
@@ -117,7 +118,7 @@ export function useStockData() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/financial/stocks')
+      const res = await apiFetch('/api/financial/stocks')
       const data = await res.json()
       if (data.success) {
         setStocks(data.data.list)
@@ -148,7 +149,7 @@ export function useMarketIndices() {
   const fetchIndices = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/financial/indices')
+      const res = await apiFetch('/api/financial/indices')
       const data = await res.json()
       if (data.success) {
         setIndices(data.data)
@@ -176,7 +177,7 @@ export function useCommodities() {
   const fetchCommodities = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/financial/commodities')
+      const res = await apiFetch('/api/financial/commodities')
       const data = await res.json()
       if (data.success) {
         setCommodities(data.data)
@@ -209,7 +210,7 @@ export function useStockDetail(code: string) {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/financial/stocks/${code}/detail`)
+      const res = await apiFetch(`/api/financial/stocks/${code}/detail`)
       const data = await res.json()
       if (data.success) {
         setDetail(data.data)
@@ -242,7 +243,7 @@ export function useTechnicalIndicators(code: string) {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/financial/stocks/${code}/indicators`)
+      const res = await apiFetch(`/api/financial/stocks/${code}/indicators`)
       const data = await res.json()
       if (data.success) {
         setIndicators(data.data)
@@ -273,7 +274,7 @@ export function useMinuteData(code: string) {
     if (!code) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/financial/stocks/${code}/minute`)
+      const res = await apiFetch(`/api/financial/stocks/${code}/minute`)
       const json = await res.json()
       if (json.success) {
         setData(json.data)
@@ -301,7 +302,7 @@ export function useWatchlist() {
   const fetchItems = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/financial/watchlist')
+      const res = await apiFetch('/api/financial/watchlist')
       const data = await res.json()
       if (data.success) {
         setItems(data.data)
@@ -319,7 +320,7 @@ export function useWatchlist() {
 
   const addItem = useCallback(async (item: Omit<WatchlistItem, 'addedAt'>) => {
     try {
-      const res = await fetch('/api/financial/watchlist', {
+      const res = await apiFetch('/api/financial/watchlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(item),
@@ -338,7 +339,7 @@ export function useWatchlist() {
 
   const removeItem = useCallback(async (code: string) => {
     try {
-      const res = await fetch(`/api/financial/watchlist/${code}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/financial/watchlist/${code}`, { method: 'DELETE' })
       const data = await res.json()
       if (data.success) {
         setItems((prev) => prev.filter((i) => i.code !== code))
@@ -389,7 +390,7 @@ export function usePositions() {
 
   const addPosition = useCallback(async (item: Omit<PositionItem, 'id' | 'addedAt'>) => {
     try {
-      const res = await fetch('/api/financial/positions', {
+      const res = await apiFetch('/api/financial/positions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(item),
@@ -408,7 +409,7 @@ export function usePositions() {
 
   const removePosition = useCallback(async (id: string) => {
     try {
-      const res = await fetch(`/api/financial/positions/${id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/financial/positions/${id}`, { method: 'DELETE' })
       const data = await res.json()
       if (data.success) {
         setItems((prev) => prev.filter((i) => i.id !== id))

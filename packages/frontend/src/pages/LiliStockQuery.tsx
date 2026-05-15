@@ -1,3 +1,4 @@
+import { apiFetch } from '../utils/api'
 import { useState, useCallback, useMemo } from 'react'
 import {
   Search,
@@ -85,7 +86,7 @@ export default function liliStockQuery() {
     setWatchlistLoading(true)
     try {
       const codes = watchlist.map((w) => w.code).join(',')
-      const res = await fetch('/api/financial/lili/query', {
+      const res = await apiFetch('/api/financial/lili/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ticker: codes, type: 'realtime_price' }),
