@@ -177,34 +177,36 @@ export default function FloatingAIChat() {
 
   return (
     <>
-      {/* Floating Button */}
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          position: 'fixed',
-          right: isMobile ? 16 : 24,
-          bottom: isMobile ? 24 : 80,
-          zIndex: 9999,
-          width: isMobile ? 48 : 56,
-          height: isMobile ? 48 : 56,
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #7c3aed, #4c1d95)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
-          transition: 'all 0.3s',
-          userSelect: 'none',
-        }}
-        title="AI 助手"
-      >
-        {isOpen ? (
-          <X size={isMobile ? 20 : 24} color="#fff" />
-        ) : (
-          <MessageSquare size={isMobile ? 20 : 24} color="#fff" />
-        )}
-      </div>
+      {/* Floating Button - H5 全屏打开时隐藏，避免遮挡输入区发送按钮 */}
+      {!(isMobile && isOpen) && (
+        <div
+          onClick={() => setIsOpen(!isOpen)}
+          style={{
+            position: 'fixed',
+            right: isMobile ? 16 : 24,
+            bottom: isMobile ? 24 : 80,
+            zIndex: 9999,
+            width: isMobile ? 48 : 56,
+            height: isMobile ? 48 : 56,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #7c3aed, #4c1d95)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
+            transition: 'all 0.3s',
+            userSelect: 'none',
+          }}
+          title="AI 助手"
+        >
+          {isOpen ? (
+            <X size={isMobile ? 20 : 24} color="#fff" />
+          ) : (
+            <MessageSquare size={isMobile ? 20 : 24} color="#fff" />
+          )}
+        </div>
+      )}
 
       {/* Chat Window */}
       {isOpen && (

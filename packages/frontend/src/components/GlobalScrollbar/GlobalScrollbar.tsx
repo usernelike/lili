@@ -1,23 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { OverlayScrollbars } from 'overlayscrollbars'
 
-const viewportOptions = {
-  scrollbars: {
-    theme: 'os-theme-custom',
-    visibility: 'auto' as const,
-    autoHide: 'scroll' as const,
-    autoHideDelay: 500,
-    autoHideSuspend: false,
-    dragScroll: true,
-    clickScroll: true as const,
-    pointers: null,
-  },
-  overflow: {
-    x: 'hidden' as const,
-    y: 'scroll' as const,
-  },
-}
-
 const defaultOptions = {
   scrollbars: {
     theme: 'os-theme-custom',
@@ -42,10 +25,11 @@ export default function GlobalScrollbar() {
     if (initialized.current) return
     initialized.current = true
 
-    // 初始化 viewport 滚动条（html 元素）
-    const osInstance = OverlayScrollbars(document.documentElement, viewportOptions)
+    // 注：不在 document.documentElement 上初始化 OverlayScrollbars。
+    // H5/移动端 OS 的 host 容器会与 viewport 滚动冲突，导致右侧空白、
+    // 内容挤压、无法滚动。viewport 滚动依靠全局 CSS 隐藏原生滚动条即可。
+    // OS 只用于内部可滚动容器（表格、弹窗、侧边栏等）。
 
-    // 为已存在的可滚动容器添加滚动条
     const initScrollableElements = () => {
       const scrollables = document.querySelectorAll(
         '[data-scrollbar], .ant-table-body, .os-scrollable'
@@ -60,7 +44,6 @@ export default function GlobalScrollbar() {
 
     initScrollableElements()
 
-    // 监听 DOM 变化，为新添加的可滚动容器初始化滚动条
     const observer = new MutationObserver(() => {
       initScrollableElements()
     })
@@ -68,7 +51,6 @@ export default function GlobalScrollbar() {
 
     return () => {
       observer.disconnect()
-      osInstance.destroy()
     }
   }, [])
 
