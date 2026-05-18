@@ -43,6 +43,21 @@ body {
   min-height: 100vh;
 }
 
+/* Hide default scrollbars globally */
+::-webkit-scrollbar {
+  display: none !important;
+}
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 /* Mobile responsive base */
 @media (max-width: 768px) {
   html {
@@ -51,12 +66,6 @@ body {
 
   body {
     overflow-x: hidden;
-  }
-
-  /* Reduce scrollbar width on mobile */
-  ::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
   }
 }
 
@@ -67,23 +76,72 @@ body {
   }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ============================================
+   OverlayScrollbars Custom Dark Theme
+   ============================================ */
+
+/* Track */
+.os-theme-custom .os-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 8px !important;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+/* Handle */
+.os-theme-custom .os-scrollbar-handle {
+  background: rgba(107, 107, 138, 0.5) !important;
+  border-radius: 8px !important;
+  transition: background 0.3s ease, transform 0.2s ease !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 3px;
+.os-theme-custom .os-scrollbar-handle:hover {
+  background: rgba(160, 160, 184, 0.7) !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+.os-theme-custom .os-scrollbar-handle:active {
+  background: rgba(0, 212, 255, 0.6) !important;
+}
+
+/* Corner */
+.os-theme-custom .os-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* Vertical scrollbar sizing */
+.os-theme-custom.os-scrollbar-vertical {
+  width: 6px !important;
+  min-width: 6px !important;
+  max-width: 6px !important;
+}
+
+.os-theme-custom.os-scrollbar-vertical .os-scrollbar-handle {
+  min-height: 30px !important;
+}
+
+/* Horizontal scrollbar sizing */
+.os-theme-custom.os-scrollbar-horizontal {
+  height: 6px !important;
+  min-height: 6px !important;
+  max-height: 6px !important;
+}
+
+.os-theme-custom.os-scrollbar-horizontal .os-scrollbar-handle {
+  min-width: 30px !important;
+}
+
+/* Auto-hide animation */
+.os-theme-custom .os-scrollbar {
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.os-theme-custom.os-scrollbar-visible .os-scrollbar,
+.os-theme-custom:hover .os-scrollbar {
+  opacity: 1;
+}
+
+/* Active state glow effect */
+.os-theme-custom.os-scrollbar-active .os-scrollbar-handle {
+  background: rgba(0, 212, 255, 0.5) !important;
 }
 
 /* Utility classes */
