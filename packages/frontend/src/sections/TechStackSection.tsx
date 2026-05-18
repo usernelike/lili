@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { gsap } from 'gsap'
 import { Server, Cloud, Shield, Zap, Code2, Globe, ArrowRight } from 'lucide-react'
+import { useMobile } from '../hooks/useMobile'
 
 const techStack = [
   { icon: Code2, label: 'React 18', desc: '现代前端框架' },
@@ -21,9 +22,11 @@ const features = [
 
 export default function TechStackSection() {
   const navigate = useNavigate()
+  const isMobile = useMobile()
   const sectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (isMobile) return
     const ctx = gsap.context(() => {
       gsap.from('.ts-title', {
         y: 40,
@@ -50,20 +53,20 @@ export default function TechStackSection() {
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [isMobile])
 
   return (
     <div
       ref={sectionRef}
       className="h-section"
       style={{
-        width: '100vw',
-        height: '100vh',
+        width: isMobile ? '100%' : '100vw',
+        minHeight: isMobile ? 'auto' : '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '0 60px',
+        padding: isMobile ? '60px 16px' : '0 60px',
         position: 'relative',
       }}
     >
@@ -81,7 +84,7 @@ export default function TechStackSection() {
         }}
       />
 
-      <div style={{ textAlign: 'center', marginBottom: 50, zIndex: 2 }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 50, zIndex: 2 }}>
         <div
           className="ts-title"
           style={{
@@ -104,14 +107,14 @@ export default function TechStackSection() {
         <h2
           className="ts-title"
           style={{
-            fontSize: 'clamp(32px, 4vw, 48px)',
+            fontSize: 'clamp(28px, 4vw, 48px)',
             fontWeight: 700,
             marginBottom: 16,
           }}
         >
           企业级<span className="text-gradient-purple">技术底座</span>
         </h2>
-        <p style={{ fontSize: 18, color: 'var(--text-secondary)', maxWidth: 550, margin: '0 auto' }}>
+        <p style={{ fontSize: isMobile ? 15 : 18, color: 'var(--text-secondary)', maxWidth: 550, margin: '0 auto' }}>
           基于现代技术栈构建，支持私有化部署与云原生弹性伸缩
         </p>
       </div>
@@ -120,11 +123,11 @@ export default function TechStackSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
-          gap: 16,
+          gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
+          gap: isMobile ? 10 : 16,
           maxWidth: 900,
           width: '100%',
-          marginBottom: 40,
+          marginBottom: isMobile ? 24 : 40,
           zIndex: 2,
         }}
       >
@@ -135,7 +138,7 @@ export default function TechStackSection() {
               key={tech.label}
               className="ts-tech"
               style={{
-                padding: 24,
+                padding: isMobile ? 14 : 24,
                 borderRadius: 14,
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid var(--border-subtle)',
@@ -153,9 +156,9 @@ export default function TechStackSection() {
                 e.currentTarget.style.transform = 'translateY(0)'
               }}
             >
-              <Icon size={28} style={{ color: 'var(--accent-purple)', marginBottom: 10 }} />
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{tech.label}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{tech.desc}</div>
+              <Icon size={isMobile ? 22 : 28} style={{ color: 'var(--accent-purple)', marginBottom: 10 }} />
+              <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 600, marginBottom: 4 }}>{tech.label}</div>
+              <div style={{ fontSize: isMobile ? 11 : 12, color: 'var(--text-muted)' }}>{tech.desc}</div>
             </div>
           )
         })}
@@ -165,11 +168,11 @@ export default function TechStackSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 20,
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+          gap: isMobile ? 10 : 20,
           maxWidth: 900,
           width: '100%',
-          marginBottom: 50,
+          marginBottom: isMobile ? 24 : 50,
           zIndex: 2,
         }}
       >
@@ -178,14 +181,14 @@ export default function TechStackSection() {
             key={f.title}
             className="ts-feature"
             style={{
-              padding: 20,
+              padding: isMobile ? 14 : 20,
               borderRadius: 12,
               background: 'rgba(255,255,255,0.02)',
               borderLeft: '3px solid var(--accent-purple)',
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>{f.title}</div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{f.desc}</div>
+            <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 600, marginBottom: 6 }}>{f.title}</div>
+            <div style={{ fontSize: isMobile ? 12 : 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{f.desc}</div>
           </div>
         ))}
       </div>
@@ -196,16 +199,19 @@ export default function TechStackSection() {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 20,
-          padding: '24px 40px',
+          gap: isMobile ? 12 : 20,
+          padding: isMobile ? '16px 20px' : '24px 40px',
           borderRadius: 16,
           background: 'var(--gradient-accent)',
           zIndex: 2,
+          flexDirection: isMobile ? 'column' : 'row',
+          textAlign: isMobile ? 'center' : 'left',
+          width: isMobile ? '100%' : 'auto',
         }}
       >
         <div>
-          <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>开始使用 lili Hub</div>
-          <div style={{ fontSize: 14, opacity: 0.9 }}>部署到自有服务器，打造专属数据平台</div>
+          <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, marginBottom: 4 }}>开始使用 lili Hub</div>
+          <div style={{ fontSize: isMobile ? 13 : 14, opacity: 0.9 }}>部署到自有服务器，打造专属数据平台</div>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
           <a
@@ -269,10 +275,11 @@ export default function TechStackSection() {
       {/* Footer */}
       <div
         style={{
-          position: 'absolute',
-          bottom: 24,
-          left: '50%',
-          transform: 'translateX(-50%)',
+          marginTop: isMobile ? 40 : 0,
+          position: isMobile ? 'relative' : 'absolute',
+          bottom: isMobile ? 0 : 24,
+          left: isMobile ? 'auto' : '50%',
+          transform: isMobile ? 'none' : 'translateX(-50%)',
           fontSize: 12,
           color: 'var(--text-muted)',
           zIndex: 2,

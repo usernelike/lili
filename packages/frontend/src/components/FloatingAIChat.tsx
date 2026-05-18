@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { MessageSquare, X, Send, Bot, User, Loader2 } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 import { useNavigate } from 'react-router-dom'
+import { useMobile } from '../hooks/useMobile'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -46,6 +47,7 @@ function parseContent(text: string, navigate: (path: string) => void): React.Rea
 
 export default function FloatingAIChat() {
   const navigate = useNavigate()
+  const isMobile = useMobile()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -180,11 +182,11 @@ export default function FloatingAIChat() {
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: 'fixed',
-          right: 24,
-          bottom: 80,
+          right: isMobile ? 16 : 24,
+          bottom: isMobile ? 24 : 80,
           zIndex: 9999,
-          width: 56,
-          height: 56,
+          width: isMobile ? 48 : 56,
+          height: isMobile ? 48 : 56,
           borderRadius: '50%',
           background: 'linear-gradient(135deg, #7c3aed, #4c1d95)',
           display: 'flex',
@@ -198,9 +200,9 @@ export default function FloatingAIChat() {
         title="AI 助手"
       >
         {isOpen ? (
-          <X size={24} color="#fff" />
+          <X size={isMobile ? 20 : 24} color="#fff" />
         ) : (
-          <MessageSquare size={24} color="#fff" />
+          <MessageSquare size={isMobile ? 20 : 24} color="#fff" />
         )}
       </div>
 
@@ -210,16 +212,17 @@ export default function FloatingAIChat() {
           ref={chatWindowRef}
           style={{
             position: 'fixed',
-            right: 24,
-            bottom: 142,
+            right: isMobile ? 0 : 24,
+            bottom: isMobile ? 0 : 142,
             zIndex: 9998,
-            width: 380,
-            maxHeight: 'calc(100vh - 120px)',
+            width: isMobile ? '100%' : 380,
+            maxHeight: isMobile ? '100vh' : 'calc(100vh - 120px)',
+            height: isMobile ? '100vh' : 'auto',
             display: 'flex',
             flexDirection: 'column',
-            borderRadius: 16,
+            borderRadius: isMobile ? 0 : 16,
             background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
+            border: isMobile ? 'none' : '1px solid var(--border-subtle)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
             overflow: 'hidden',
           }}
@@ -227,7 +230,7 @@ export default function FloatingAIChat() {
           {/* Header */}
           <div
             style={{
-              padding: '14px 18px',
+              padding: isMobile ? '12px 16px' : '14px 18px',
               borderBottom: '1px solid var(--border-subtle)',
               display: 'flex',
               alignItems: 'center',
@@ -238,6 +241,21 @@ export default function FloatingAIChat() {
             <Bot size={20} color="#fff" />
             <span style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>lili AI 助手</span>
             {isStreaming && <Loader2 size={14} color="#fff" className="spin" />}
+            {isMobile && (
+              <button
+                onClick={() => setIsOpen(false)}
+                style={{
+                  marginLeft: 'auto',
+                  background: 'none',
+                  border: 'none',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  padding: 4,
+                }}
+              >
+                <X size={20} />
+              </button>
+            )}
           </div>
 
           {/* Messages */}
@@ -249,7 +267,7 @@ export default function FloatingAIChat() {
               display: 'flex',
               flexDirection: 'column',
               gap: 12,
-              maxHeight: 400,
+              maxHeight: isMobile ? 'none' : 400,
             }}
           >
             {messages.map((msg) => (
@@ -288,7 +306,7 @@ export default function FloatingAIChat() {
                     color: 'var(--text-primary)',
                     fontSize: 13,
                     lineHeight: 1.6,
-                    maxWidth: '80%',
+                    maxWidth: isMobile ? '75%' : '80%',
                     wordBreak: 'break-word',
                     whiteSpace: 'pre-wrap',
                   }}
@@ -307,7 +325,7 @@ export default function FloatingAIChat() {
           {/* Input */}
           <div
             style={{
-              padding: '12px 16px',
+              padding: isMobile ? '10px 12px' : '12px 16px',
               borderTop: '1px solid var(--border-subtle)',
               display: 'flex',
               gap: 10,

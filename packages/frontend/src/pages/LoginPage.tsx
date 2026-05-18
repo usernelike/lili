@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { AnimatedCharacters } from '../components/AnimatedCharacters'
 import { Eye, EyeOff } from 'lucide-react'
+import { useMobile } from '../hooks/useMobile'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const isMobile = useMobile()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -50,18 +52,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-primary)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: isMobile ? 'column' : 'row', background: 'var(--bg-primary)' }}>
       {/* Left: Animated Characters */}
       <div
         style={{
-          flex: 1,
+          flex: isMobile ? 'none' : 1,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
-          padding: 48,
+          padding: isMobile ? 24 : 48,
           position: 'relative',
           overflow: 'hidden',
+          minHeight: isMobile ? 180 : 'auto',
         }}
       >
         {/* Decorative grid */}
@@ -81,8 +84,8 @@ export default function LoginPage() {
             position: 'absolute',
             top: '20%',
             right: '10%',
-            width: 300,
-            height: 300,
+            width: isMobile ? 150 : 300,
+            height: isMobile ? 150 : 300,
             background: 'rgba(124,58,237,0.25)',
             borderRadius: '50%',
             filter: 'blur(80px)',
@@ -93,8 +96,8 @@ export default function LoginPage() {
             position: 'absolute',
             bottom: '15%',
             left: '5%',
-            width: 250,
-            height: 250,
+            width: isMobile ? 120 : 250,
+            height: isMobile ? 120 : 250,
             background: 'rgba(59,130,246,0.2)',
             borderRadius: '50%',
             filter: 'blur(80px)',
@@ -110,7 +113,7 @@ export default function LoginPage() {
               gap: 12,
               color: '#fff',
               textDecoration: 'none',
-              fontSize: 20,
+              fontSize: isMobile ? 18 : 20,
               fontWeight: 700,
             }}
           >
@@ -132,23 +135,25 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div
-          style={{
-            position: 'relative',
-            bottom: '20%',
-            zIndex: 1,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'flex-end',
-            flex: 1,
-          }}
-        >
-          <AnimatedCharacters
-            isTyping={isTyping}
-            showPassword={showPassword}
-            passwordLength={password.length}
-          />
-        </div>
+        {!isMobile && (
+          <div
+            style={{
+              position: 'relative',
+              bottom: '20%',
+              zIndex: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'flex-end',
+              flex: 1,
+            }}
+          >
+            <AnimatedCharacters
+              isTyping={isTyping}
+              showPassword={showPassword}
+              passwordLength={password.length}
+            />
+          </div>
+        )}
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 24 }}>
           <a href="https://github.com/arsh342/careercompass" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
@@ -166,15 +171,15 @@ export default function LoginPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 40,
-          minWidth: 400,
+          padding: isMobile ? '24px 20px' : 40,
+          minWidth: isMobile ? 'auto' : 400,
         }}
       >
         <div style={{ width: '100%', maxWidth: 400 }}>
-          <div style={{ marginBottom: 40 }}>
+          <div style={{ marginBottom: isMobile ? 28 : 40 }}>
             <h1
               style={{
-                fontSize: 32,
+                fontSize: isMobile ? 26 : 32,
                 fontWeight: 700,
                 marginBottom: 8,
                 color: 'var(--text-primary)',

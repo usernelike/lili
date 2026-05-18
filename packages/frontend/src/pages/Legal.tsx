@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Scale, AlertTriangle, Shield, BookOpen, FileWarning } from 'lucide-react'
+import { useMobile } from '../hooks/useMobile'
 
 const sections = [
   {
@@ -46,9 +47,10 @@ const sections = [
 
 export default function Legal() {
   const navigate = useNavigate()
+  const isMobile = useMobile()
 
   return (
-    <div style={{ padding: '100px 40px 60px', maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? '80px 16px 40px' : '100px 40px 60px', maxWidth: 900, margin: '0 auto' }}>
       <button
         onClick={() => navigate(-1)}
         style={{
@@ -69,7 +71,7 @@ export default function Legal() {
         <ArrowLeft size={16} /> 返回
       </button>
 
-      <div style={{ textAlign: 'center', marginBottom: 50 }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 50 }}>
         <div
           style={{
             display: 'inline-flex',
@@ -88,21 +90,21 @@ export default function Legal() {
           <FileWarning size={14} />
           法律合规
         </div>
-        <h1 style={{ fontSize: 36, fontWeight: 700, marginBottom: 12 }}>法律合规声明</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 16, maxWidth: 600, margin: '0 auto' }}>
+        <h1 style={{ fontSize: isMobile ? 26 : 36, fontWeight: 700, marginBottom: 12 }}>法律合规声明</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: isMobile ? 14 : 16, maxWidth: 600, margin: '0 auto' }}>
           lili Hub 仅供学习研究和技术交流使用，使用本平台时必须严格遵守相关法律法规
         </p>
       </div>
 
       <div
         style={{
-          padding: 20,
+          padding: isMobile ? '14px 16px' : 20,
           borderRadius: 12,
           background: 'rgba(245,158,11,0.06)',
           border: '1px solid rgba(245,158,11,0.15)',
           marginBottom: 40,
           textAlign: 'center',
-          fontSize: 14,
+          fontSize: isMobile ? 13 : 14,
           color: 'var(--accent-orange)',
           lineHeight: 1.7,
         }}
@@ -112,14 +114,14 @@ export default function Legal() {
         平台保留终止服务并配合有关部门调查的权利。
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 16 : 24 }}>
         {sections.map((section) => {
           const Icon = section.icon
           return (
             <div
               key={section.title}
               style={{
-                padding: 28,
+                padding: isMobile ? 20 : 28,
                 borderRadius: 16,
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border-subtle)',
@@ -128,8 +130,8 @@ export default function Legal() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: isMobile ? 36 : 40,
+                    height: isMobile ? 36 : 40,
                     borderRadius: 10,
                     background: 'rgba(245,158,11,0.1)',
                     display: 'flex',
@@ -137,9 +139,9 @@ export default function Legal() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Icon size={20} style={{ color: 'var(--accent-orange)' }} />
+                  <Icon size={isMobile ? 18 : 20} style={{ color: 'var(--accent-orange)' }} />
                 </div>
-                <h2 style={{ fontSize: 20, fontWeight: 700 }}>{section.title}</h2>
+                <h2 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700 }}>{section.title}</h2>
               </div>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {section.items.map((item, i) => (
@@ -149,7 +151,7 @@ export default function Legal() {
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: 10,
-                      fontSize: 14,
+                      fontSize: isMobile ? 13 : 14,
                       color: 'var(--text-secondary)',
                       lineHeight: 1.6,
                     }}

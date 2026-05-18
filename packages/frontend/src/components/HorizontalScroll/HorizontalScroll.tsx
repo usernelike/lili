@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useMobile } from '../../hooks/useMobile'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -11,8 +12,10 @@ interface HorizontalScrollProps {
 export default function HorizontalScroll({ children }: HorizontalScrollProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const isMobile = useMobile()
 
   useEffect(() => {
+    if (isMobile) return
     const container = containerRef.current
     const scrollContainer = scrollRef.current
     if (!container || !scrollContainer) return
@@ -56,7 +59,11 @@ export default function HorizontalScroll({ children }: HorizontalScrollProps) {
       }
       ctx.revert()
     }
-  }, [])
+  }, [isMobile])
+
+  if (isMobile) {
+    return <div style={{ display: 'flex', flexDirection: 'column' }}>{children}</div>
+  }
 
   return (
     <div ref={containerRef} style={{ overflow: 'hidden' }}>

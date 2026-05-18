@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Input, Tag } from 'antd'
 import { Search, Building2, Users, Gavel, FileText, BadgeCheck, Globe, ExternalLink } from 'lucide-react'
+import { useMobile } from '../hooks/useMobile'
 
 const platforms = [
   { name: '天眼查', url: 'https://www.tianyancha.com/search?key=', color: '#3b82f6' },
@@ -56,6 +57,7 @@ const hotCompanies = [
 ]
 
 export default function EnterpriseQuery() {
+  const isMobile = useMobile()
   const [searchValue, setSearchValue] = useState('')
   const [activePlatform, setActivePlatform] = useState(platforms[0])
 
@@ -72,30 +74,31 @@ export default function EnterpriseQuery() {
   }
 
   return (
-    <div style={{ padding: '100px 40px 40px', maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ textAlign: 'center', marginBottom: 50 }}>
-        <h1 style={{ fontSize: 36, fontWeight: 700, marginBottom: 12 }}>
+    <div style={{ padding: isMobile ? '80px 16px 40px' : '100px 40px 40px', maxWidth: 1200, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 50 }}>
+        <h1 style={{ fontSize: isMobile ? 26 : 36, fontWeight: 700, marginBottom: 12 }}>
           企业信息查询
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 16 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: isMobile ? 14 : 16 }}>
           即将接入天眼查全量数据库，支持2.8亿+企业多维度查询
         </p>
         <div
           style={{
             marginTop: 16,
-            padding: '10px 20px',
+            padding: '10px 16px',
             borderRadius: 8,
             background: 'rgba(245,158,11,0.08)',
             border: '1px solid rgba(245,158,11,0.2)',
-            fontSize: 13,
+            fontSize: isMobile ? 12 : 13,
             color: 'var(--accent-orange)',
             display: 'inline-flex',
             alignItems: 'center',
             gap: 8,
             maxWidth: 700,
+            textAlign: 'left',
           }}
         >
-          <span style={{ fontWeight: 600 }}>⚠️ 合规提示：</span>
+          <span style={{ fontWeight: 600, flexShrink: 0 }}>⚠️ 合规提示：</span>
           <span>企业数据仅用于合法商业决策参考，禁止用于诈骗、骚扰营销、侵犯隐私等违法活动。</span>
         </div>
       </div>
@@ -105,7 +108,7 @@ export default function EnterpriseQuery() {
         style={{
           maxWidth: 700,
           margin: '0 auto 50px',
-          padding: 32,
+          padding: isMobile ? 20 : 32,
           borderRadius: 20,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
@@ -118,13 +121,13 @@ export default function EnterpriseQuery() {
               onClick={() => setActivePlatform(p)}
               style={{
                 flex: 1,
-                padding: '10px',
+                padding: isMobile ? '8px 4px' : '10px',
                 borderRadius: 10,
                 border: '1px solid',
                 borderColor: activePlatform.name === p.name ? p.color : 'var(--border-subtle)',
                 background: activePlatform.name === p.name ? `${p.color}15` : 'transparent',
                 color: activePlatform.name === p.name ? p.color : 'var(--text-muted)',
-                fontSize: 14,
+                fontSize: isMobile ? 12 : 14,
                 fontWeight: 500,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -155,9 +158,9 @@ export default function EnterpriseQuery() {
             onPressEnter={handleSearch}
             style={{
               paddingLeft: 48,
-              paddingRight: 120,
-              height: 52,
-              fontSize: 16,
+              paddingRight: isMobile ? 48 : 120,
+              height: isMobile ? 44 : 52,
+              fontSize: isMobile ? 14 : 16,
               background: 'var(--bg-primary)',
               borderColor: 'var(--border-subtle)',
             }}
@@ -169,12 +172,12 @@ export default function EnterpriseQuery() {
               right: 6,
               top: '50%',
               transform: 'translateY(-50%)',
-              padding: '10px 24px',
+              padding: isMobile ? '8px 12px' : '10px 24px',
               borderRadius: 10,
               border: 'none',
               background: activePlatform.color,
               color: '#fff',
-              fontSize: 15,
+              fontSize: isMobile ? 13 : 15,
               fontWeight: 600,
               cursor: 'pointer',
               fontFamily: 'inherit',
@@ -183,7 +186,7 @@ export default function EnterpriseQuery() {
               gap: 6,
             }}
           >
-            <Search size={16} /> 查询
+            {isMobile ? <Search size={16} /> : <><Search size={16} /> 查询</>}
           </button>
         </div>
 
@@ -210,18 +213,18 @@ export default function EnterpriseQuery() {
       </div>
 
       {/* Quick Access Buttons */}
-      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 60 }}>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: isMobile ? 40 : 60, flexWrap: 'wrap' }}>
         {platforms.map((p) => (
           <button
             key={p.name}
             onClick={() => handlePlatformSearch(p)}
             style={{
-              padding: '12px 24px',
+              padding: isMobile ? '10px 16px' : '12px 24px',
               borderRadius: 12,
               border: `1px solid ${p.color}40`,
               background: `${p.color}10`,
               color: p.color,
-              fontSize: 14,
+              fontSize: isMobile ? 13 : 14,
               fontWeight: 500,
               cursor: 'pointer',
               fontFamily: 'inherit',
@@ -247,10 +250,10 @@ export default function EnterpriseQuery() {
 
       {/* Data Dimensions */}
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
+        <h2 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, marginBottom: 8 }}>
           数据库能力预览
         </h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: isMobile ? 13 : 14 }}>
           接入天眼查开放平台后，将解锁以下全维度企业数据
         </p>
       </div>
@@ -258,8 +261,8 @@ export default function EnterpriseQuery() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 20,
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: isMobile ? 12 : 20,
         }}
       >
         {dataDimensions.map((dim) => {
@@ -268,7 +271,7 @@ export default function EnterpriseQuery() {
             <div
               key={dim.title}
               style={{
-                padding: 24,
+                padding: isMobile ? 16 : 24,
                 borderRadius: 16,
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border-subtle)',
@@ -286,8 +289,8 @@ export default function EnterpriseQuery() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: isMobile ? 36 : 40,
+                    height: isMobile ? 36 : 40,
                     borderRadius: 10,
                     background: 'rgba(0,212,255,0.1)',
                     display: 'flex',
@@ -295,10 +298,10 @@ export default function EnterpriseQuery() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Icon size={20} style={{ color: 'var(--accent-cyan)' }} />
+                  <Icon size={isMobile ? 18 : 20} style={{ color: 'var(--accent-cyan)' }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 600 }}>{dim.title}</div>
+                  <div style={{ fontSize: isMobile ? 15 : 16, fontWeight: 600 }}>{dim.title}</div>
                   <Tag
                     style={{
                       fontSize: 11,

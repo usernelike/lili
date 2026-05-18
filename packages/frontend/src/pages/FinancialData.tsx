@@ -22,6 +22,7 @@ import {
 import type { ColumnsType } from 'antd/es/table'
 import { useStockData, useMarketIndices, useCommodities, useStockSearch } from '../hooks/useStockData'
 import type { StockData } from '../hooks/useStockData'
+import { useMobile } from '../hooks/useMobile'
 
 const features = [
   {
@@ -83,6 +84,7 @@ const marketSupport = [
 
 export default function FinancialData() {
   const navigate = useNavigate()
+  const isMobile = useMobile()
   const [page, setPage] = useState(1)
   const [pageSize] = useState(20)
   const { response, stocks, loading, lastUpdate, refetch } = useStockData(page, pageSize)
@@ -196,7 +198,7 @@ export default function FinancialData() {
   }
 
   return (
-    <div style={{ padding: '100px 40px 60px', maxWidth: 1200, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? '80px 16px 40px' : '100px 40px 60px', maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <div
@@ -217,10 +219,10 @@ export default function FinancialData() {
           <Zap size={14} />
           lili 插件: lili-datasource v2.0.1
         </div>
-        <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }}>
+        <h1 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 700, marginBottom: 8 }}>
           lili 股票助手
         </h1>
-        <p style={{ color: 'var(--text-secondary)' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: isMobile ? 14 : 16 }}>
           支持 A 股 / 港股实时行情、技术指标、开盘/收盘摘要查询
         </p>
       </div>
@@ -228,7 +230,7 @@ export default function FinancialData() {
       {/* Risk Warning */}
       <div
         style={{
-          padding: '12px 20px',
+          padding: isMobile ? '10px 14px' : '12px 20px',
           borderRadius: 10,
           background: 'rgba(245,158,11,0.08)',
           border: '1px solid rgba(245,158,11,0.2)',
@@ -236,21 +238,21 @@ export default function FinancialData() {
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          fontSize: 13,
+          fontSize: isMobile ? 12 : 13,
           color: 'var(--accent-orange)',
         }}
       >
-        <AlertCircle size={16} />
+        <AlertCircle size={isMobile ? 14 : 16} />
         <span><strong>风险提示：</strong>数据仅供参考，不构成任何投资建议。投资有风险，入市需谨慎。</span>
       </div>
 
       {/* Features */}
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>插件能力</h2>
+      <h2 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, marginBottom: 16 }}>插件能力</h2>
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 16,
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+          gap: isMobile ? 10 : 16,
           marginBottom: 32,
         }}
       >
@@ -260,7 +262,7 @@ export default function FinancialData() {
             <div
               key={f.title}
               style={{
-                padding: 20,
+                padding: isMobile ? 14 : 20,
                 borderRadius: 14,
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border-subtle)',
@@ -269,10 +271,10 @@ export default function FinancialData() {
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-glow)' }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
             >
-              <Icon size={22} style={{ color: 'var(--accent-cyan)', marginBottom: 10 }} />
-              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{f.title}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>{f.desc}</div>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <Icon size={isMobile ? 18 : 22} style={{ color: 'var(--accent-cyan)', marginBottom: 10 }} />
+              <div style={{ fontSize: isMobile ? 13 : 15, fontWeight: 600, marginBottom: 4 }}>{f.title}</div>
+              <div style={{ fontSize: isMobile ? 11 : 13, color: 'var(--text-muted)', marginBottom: 10 }}>{f.desc}</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 <Tag style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--accent-green)', border: 'none', fontSize: 11 }}>A股 {f.a ? '✅' : '❌'}</Tag>
                 <Tag style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: 'none', fontSize: 11 }}>港股 {f.hk ? '✅' : '❌'}</Tag>
               </div>
@@ -282,16 +284,17 @@ export default function FinancialData() {
       </div>
 
       {/* Market Support */}
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>市场支持</h2>
+      <h2 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, marginBottom: 16 }}>市场支持</h2>
       <div
         style={{
           marginBottom: 32,
           borderRadius: 12,
           overflow: 'hidden',
           border: '1px solid var(--border-subtle)',
+          overflowX: 'auto',
         }}
       >
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table style={{ width: '100%', minWidth: isMobile ? 600 : 'auto', borderCollapse: 'collapse', fontSize: isMobile ? 12 : 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-secondary)' }}>
               <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600 }}>市场</th>
@@ -318,11 +321,11 @@ export default function FinancialData() {
       </div>
 
       {/* Commodities */}
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>大宗商品</h2>
+      <h2 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, marginBottom: 16 }}>大宗商品</h2>
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
           gap: 12,
           marginBottom: 32,
         }}
@@ -362,7 +365,7 @@ export default function FinancialData() {
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>{c.name}</div>
                 <div
                   style={{
-                    fontSize: 22,
+                    fontSize: isMobile ? 18 : 22,
                     fontWeight: 700,
                     color: up ? 'var(--accent-green)' : 'var(--accent-red)',
                     marginBottom: 4,
@@ -392,7 +395,7 @@ export default function FinancialData() {
       </div>
 
       {/* Real-time Quotes */}
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
+      <h2 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, marginBottom: 16 }}>
         实时行情（腾讯证券接口）
         {!isSearching && total > 0 && (
           <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400, marginLeft: 12 }}>
@@ -405,7 +408,7 @@ export default function FinancialData() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
           gap: 12,
           marginBottom: 20,
         }}
@@ -423,7 +426,7 @@ export default function FinancialData() {
               }}
             >
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 6 }}>{idx.name}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: up ? 'var(--accent-green)' : 'var(--accent-red)' }}>{idx.price.toFixed(2)}</div>
+              <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: up ? 'var(--accent-green)' : 'var(--accent-red)' }}>{idx.price.toFixed(2)}</div>
               <div style={{ fontSize: 12, color: up ? 'var(--accent-green)' : 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: 4 }}>
                 {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                 {up ? '+' : ''}{idx.change.toFixed(2)} ({up ? '+' : ''}{idx.changePercent.toFixed(2)}%)
@@ -445,9 +448,11 @@ export default function FinancialData() {
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: 16,
+          flexWrap: 'wrap',
+          gap: 12,
         }}
       >
-        <div style={{ position: 'relative', width: 320 }}>
+        <div style={{ position: 'relative', width: isMobile ? '100%' : 320 }}>
           <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <Input
             placeholder="搜索股票代码或名称"
@@ -514,7 +519,7 @@ export default function FinancialData() {
 
           {/* Pagination */}
           {!isSearching && totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 40 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 40, flexWrap: 'wrap' }}>
               <button
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page <= 1}
@@ -530,7 +535,7 @@ export default function FinancialData() {
               >
                 上一页
               </button>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              {Array.from({ length: Math.min(isMobile ? 3 : 5, totalPages) }, (_, i) => {
                 const p = i + 1
                 const isActive = p === page
                 return (
@@ -573,7 +578,7 @@ export default function FinancialData() {
       )}
 
       {/* Usage Examples */}
-      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>使用示例</h2>
+      <h2 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, marginBottom: 16 }}>使用示例</h2>
       <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 16 }}>
         在 lili Code CLI 对话中直接输入以下命令或自然语言提问：
       </p>
@@ -582,14 +587,14 @@ export default function FinancialData() {
           <div
             key={ex.title}
             style={{
-              padding: 16,
+              padding: isMobile ? 12 : 16,
               borderRadius: 12,
               background: 'var(--bg-card)',
               border: '1px solid var(--border-subtle)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>{ex.title}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 600 }}>{ex.title}</div>
               <button
                 onClick={() => copy(ex.cmd, i)}
                 style={{
@@ -616,7 +621,7 @@ export default function FinancialData() {
                 borderRadius: 8,
                 background: 'rgba(0,0,0,0.3)',
                 fontFamily: 'monospace',
-                fontSize: 13,
+                fontSize: isMobile ? 11 : 13,
                 color: 'var(--accent-cyan)',
                 overflowX: 'auto',
               }}
@@ -631,13 +636,13 @@ export default function FinancialData() {
       {/* How to use */}
       <div
         style={{
-          padding: 24,
+          padding: isMobile ? 16 : 24,
           borderRadius: 16,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
         }}
       >
-        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>如何使用</h3>
+        <h3 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 700, marginBottom: 16 }}>如何使用</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[
             { step: '1', title: '在 lili Code CLI 中对话', desc: '直接输入股票相关问题，如"茅台现在多少钱"，插件自动识别并调用 query_stock 工具' },
@@ -674,11 +679,11 @@ export default function FinancialData() {
       <div
         style={{
           marginTop: 24,
-          padding: '16px 20px',
+          padding: isMobile ? '12px 16px' : '16px 20px',
           borderRadius: 12,
           background: 'rgba(245,158,11,0.06)',
           border: '1px solid rgba(245,158,11,0.15)',
-          fontSize: 13,
+          fontSize: isMobile ? 12 : 13,
           color: 'var(--accent-orange)',
           lineHeight: 1.8,
         }}

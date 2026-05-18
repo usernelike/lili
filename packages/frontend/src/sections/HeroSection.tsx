@@ -2,12 +2,15 @@ import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ArrowRight, Database, TrendingUp, Building2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useMobile } from '../hooks/useMobile'
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const isMobile = useMobile()
 
   useEffect(() => {
+    if (isMobile) return
     const ctx = gsap.context(() => {
       gsap.from('.hero-title', {
         y: 60,
@@ -41,21 +44,21 @@ export default function HeroSection() {
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [isMobile])
 
   return (
     <div
       ref={sectionRef}
       className="h-section"
       style={{
-        width: '100vw',
-        height: '100vh',
+        width: isMobile ? '100%' : '100vw',
+        minHeight: isMobile ? 'auto' : '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
-        padding: '0 60px',
+        padding: isMobile ? '80px 16px 60px' : '0 60px',
         background: 'var(--gradient-hero)',
       }}
     >
@@ -89,7 +92,7 @@ export default function HeroSection() {
         <div
           className="hero-title"
           style={{
-            fontSize: 'clamp(40px, 6vw, 72px)',
+            fontSize: 'clamp(32px, 6vw, 72px)',
             fontWeight: 800,
             lineHeight: 1.1,
             marginBottom: 24,
@@ -104,7 +107,7 @@ export default function HeroSection() {
         <p
           className="hero-subtitle"
           style={{
-            fontSize: 'clamp(16px, 2vw, 20px)',
+            fontSize: 'clamp(14px, 2vw, 20px)',
             color: 'var(--text-secondary)',
             lineHeight: 1.7,
             marginBottom: 40,
@@ -113,23 +116,23 @@ export default function HeroSection() {
           }}
         >
           聚合天眼查、同花顺、新浪财经等权威数据源，
-          <br />
+          {isMobile ? <br /> : ' '}
           为企业提供查询、分析、决策一体化的数据服务
         </p>
 
         <div
           className="hero-cta"
-          style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 60 }}
+          style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 60, flexWrap: 'wrap' }}
         >
           <button
             onClick={() => navigate('/financial')}
             style={{
-              padding: '14px 32px',
+              padding: isMobile ? '12px 24px' : '14px 32px',
               borderRadius: 12,
               border: 'none',
               background: 'var(--gradient-accent)',
               color: '#fff',
-              fontSize: 16,
+              fontSize: isMobile ? 14 : 16,
               fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
@@ -147,7 +150,7 @@ export default function HeroSection() {
               e.currentTarget.style.boxShadow = 'none'
             }}
           >
-            探索数据 <ArrowRight size={18} />
+            探索数据 <ArrowRight size={isMobile ? 16 : 18} />
           </button>
           <button
             onClick={() => {
@@ -155,12 +158,12 @@ export default function HeroSection() {
               el?.scrollIntoView({ behavior: 'smooth' })
             }}
             style={{
-              padding: '14px 32px',
+              padding: isMobile ? '12px 24px' : '14px 32px',
               borderRadius: 12,
               border: '1px solid var(--border-subtle)',
               background: 'transparent',
               color: 'var(--text-secondary)',
-              fontSize: 16,
+              fontSize: isMobile ? 14 : 16,
               fontWeight: 500,
               cursor: 'pointer',
               fontFamily: 'inherit',
@@ -183,7 +186,7 @@ export default function HeroSection() {
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: 60,
+            gap: isMobile ? 32 : 60,
             flexWrap: 'wrap',
           }}
         >
@@ -204,10 +207,10 @@ export default function HeroSection() {
                   gap: 8,
                 }}
               >
-                <Icon size={24} style={{ color: 'var(--accent-cyan)', opacity: 0.8 }} />
+                <Icon size={isMobile ? 20 : 24} style={{ color: 'var(--accent-cyan)', opacity: 0.8 }} />
                 <div
                   style={{
-                    fontSize: 28,
+                    fontSize: isMobile ? 22 : 28,
                     fontWeight: 700,
                     background: 'var(--gradient-accent)',
                     WebkitBackgroundClip: 'text',
@@ -216,7 +219,7 @@ export default function HeroSection() {
                 >
                   {stat.value}
                 </div>
-                <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>{stat.label}</div>
+                <div style={{ fontSize: isMobile ? 12 : 14, color: 'var(--text-muted)' }}>{stat.label}</div>
               </div>
             )
           })}
@@ -224,29 +227,31 @@ export default function HeroSection() {
       </div>
 
       {/* Scroll hint */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 40,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 8,
-          color: 'var(--text-muted)',
-          fontSize: 12,
-        }}
-      >
-        <span>向下滚动探索</span>
+      {!isMobile && (
         <div
           style={{
-            width: 1,
-            height: 40,
-            background: 'linear-gradient(to bottom, var(--accent-cyan), transparent)',
+            position: 'absolute',
+            bottom: 40,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+            color: 'var(--text-muted)',
+            fontSize: 12,
           }}
-        />
-      </div>
+        >
+          <span>向下滚动探索</span>
+          <div
+            style={{
+              width: 1,
+              height: 40,
+              background: 'linear-gradient(to bottom, var(--accent-cyan), transparent)',
+            }}
+          />
+        </div>
+      )}
     </div>
   )
 }

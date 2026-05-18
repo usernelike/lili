@@ -18,6 +18,7 @@ import {
   type LiliQueryType,
   type LiliWatchlistItem,
 } from '../hooks/useLiliDatasource'
+import { useMobile } from '../hooks/useMobile'
 
 const queryTypeOptions: { value: LiliQueryType; label: string; icon: typeof Search; desc: string }[] = [
   { value: 'realtime_price', label: '实时行情', icon: TrendingUp, desc: '当前价、分钟K线、涨跌幅' },
@@ -35,6 +36,7 @@ function getMarketFromCode(code: string): string {
 }
 
 export default function liliStockQuery() {
+  const isMobile = useMobile()
   const [tickerInput, setTickerInput] = useState('')
   const [queryType, setQueryType] = useState<LiliQueryType>('realtime_price')
   const { result, loading, error, query } = useLiliQuery()
@@ -191,13 +193,13 @@ export default function liliStockQuery() {
     <div
       style={{
         minHeight: '100vh',
-        padding: '100px 40px 60px',
+        padding: isMobile ? '80px 16px 40px' : '100px 40px 60px',
         maxWidth: 1200,
         margin: '0 auto',
       }}
     >
       {/* Header */}
-      <div style={{ marginBottom: 40 }}>
+      <div style={{ marginBottom: isMobile ? 24 : 40 }}>
         <div
           style={{
             display: 'inline-flex',
@@ -216,10 +218,10 @@ export default function liliStockQuery() {
           <Database size={14} />
           lili 数据源
         </div>
-        <h1 style={{ fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 700, marginBottom: 12 }}>
+        <h1 style={{ fontSize: isMobile ? 24 : 'clamp(28px, 3vw, 40px)', fontWeight: 700, marginBottom: 12 }}>
           多源数据<span className="gradient-text">一站式查询</span>
         </h1>
-        <p style={{ fontSize: 16, color: 'var(--text-secondary)', maxWidth: 600, whiteSpace: 'nowrap' }}>
+        <p style={{ fontSize: isMobile ? 14 : 16, color: 'var(--text-secondary)', maxWidth: 600, whiteSpace: isMobile ? 'normal' : 'nowrap' }}>
           接入 lili Code 官方股票数据源，支持 A 股/港股实时行情、技术指标、开盘/收盘摘要
         </p>
       </div>
@@ -234,12 +236,12 @@ export default function liliStockQuery() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key as 'query' | 'watchlist')}
             style={{
-              padding: '12px 24px',
+              padding: isMobile ? '10px 14px' : '12px 24px',
               background: 'none',
               border: 'none',
               borderBottom: activeTab === tab.key ? '2px solid var(--accent-cyan)' : '2px solid transparent',
               color: activeTab === tab.key ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-              fontSize: 15,
+              fontSize: isMobile ? 14 : 15,
               fontWeight: 500,
               cursor: 'pointer',
               fontFamily: 'inherit',
@@ -256,14 +258,14 @@ export default function liliStockQuery() {
           {/* Query Panel */}
           <div
             className="glass-card"
-            style={{ padding: 32, marginBottom: 32 }}
+            style={{ padding: isMobile ? 20 : 32, marginBottom: 32 }}
           >
             {/* Ticker Input */}
             <div style={{ marginBottom: 24 }}>
               <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 8, color: 'var(--text-primary)' }}>
                 股票代码
               </label>
-              <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <input
                   type="text"
                   value={tickerInput}
@@ -271,6 +273,7 @@ export default function liliStockQuery() {
                   placeholder="例如：600519.SH, 0700.HK（最多3个，逗号分隔）"
                   style={{
                     flex: 1,
+                    minWidth: isMobile ? '100%' : 200,
                     padding: '12px 16px',
                     borderRadius: 10,
                     border: '1px solid var(--border-subtle)',
@@ -315,7 +318,7 @@ export default function liliStockQuery() {
               <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 12, color: 'var(--text-primary)' }}>
                 查询类型
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12 }}>
                 {queryTypeOptions.map((opt) => {
                   const Icon = opt.icon
                   const isActive = queryType === opt.value
@@ -324,7 +327,7 @@ export default function liliStockQuery() {
                       key={opt.value}
                       onClick={() => setQueryType(opt.value)}
                       style={{
-                        padding: 16,
+                        padding: isMobile ? 12 : 16,
                         borderRadius: 12,
                         border: isActive ? '1px solid var(--accent-cyan)' : '1px solid var(--border-subtle)',
                         background: isActive ? 'rgba(0,212,255,0.08)' : 'rgba(255,255,255,0.02)',
@@ -332,11 +335,11 @@ export default function liliStockQuery() {
                         transition: 'all 0.2s',
                       }}
                     >
-                      <Icon size={20} style={{ color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)', marginBottom: 8 }} />
-                      <div style={{ fontSize: 14, fontWeight: 600, color: isActive ? 'var(--accent-cyan)' : 'var(--text-primary)', marginBottom: 4 }}>
+                      <Icon size={isMobile ? 18 : 20} style={{ color: isActive ? 'var(--accent-cyan)' : 'var(--text-muted)', marginBottom: 8 }} />
+                      <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 600, color: isActive ? 'var(--accent-cyan)' : 'var(--text-primary)', marginBottom: 4 }}>
                         {opt.label}
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{opt.desc}</div>
+                      <div style={{ fontSize: isMobile ? 11 : 12, color: 'var(--text-muted)' }}>{opt.desc}</div>
                     </div>
                   )
                 })}
@@ -348,7 +351,7 @@ export default function liliStockQuery() {
           {error && (
             <div
               style={{
-                padding: '16px 20px',
+                padding: isMobile ? '12px 16px' : '16px 20px',
                 borderRadius: 12,
                 background: 'rgba(239,68,68,0.08)',
                 border: '1px solid rgba(239,68,68,0.2)',
@@ -359,16 +362,16 @@ export default function liliStockQuery() {
                 marginBottom: 24,
               }}
             >
-              <AlertTriangle size={18} />
+              <AlertTriangle size={isMobile ? 16 : 18} />
               {error}
             </div>
           )}
 
           {/* Results */}
           {result && (
-            <div className="glass-card" style={{ padding: 32 }}>
+            <div className="glass-card" style={{ padding: isMobile ? 16 : 32 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h3 style={{ fontSize: 18, fontWeight: 700 }}>查询结果</h3>
+                <h3 style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700 }}>查询结果</h3>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                   共 {result.data?.length || 0} 条数据
                 </span>
@@ -400,9 +403,9 @@ export default function liliStockQuery() {
       {activeTab === 'watchlist' && (
         <>
           {/* Add Watchlist */}
-          <div className="glass-card" style={{ padding: 24, marginBottom: 32 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>添加自选股</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
+          <div className="glass-card" style={{ padding: isMobile ? 16 : 24, marginBottom: 32 }}>
+            <h3 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 600, marginBottom: 16 }}>添加自选股</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 2fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>股票名称</label>
                 <input
@@ -513,26 +516,27 @@ export default function liliStockQuery() {
             <div
               className="glass-card"
               style={{
-                padding: 20,
+                padding: isMobile ? 16 : 20,
                 marginBottom: 24,
                 display: 'flex',
-                gap: 32,
+                gap: isMobile ? 16 : 32,
                 alignItems: 'center',
+                flexWrap: 'wrap',
               }}
             >
               <div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>总成本</div>
-                <div style={{ fontSize: 20, fontWeight: 700 }}>¥{watchlistSummary.totalCost.toFixed(2)}</div>
+                <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 700 }}>¥{watchlistSummary.totalCost.toFixed(2)}</div>
               </div>
               <div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>总市值</div>
-                <div style={{ fontSize: 20, fontWeight: 700 }}>¥{watchlistSummary.totalValue.toFixed(2)}</div>
+                <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 700 }}>¥{watchlistSummary.totalValue.toFixed(2)}</div>
               </div>
               <div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>盈亏</div>
                 <div
                   style={{
-                    fontSize: 20,
+                    fontSize: isMobile ? 16 : 20,
                     fontWeight: 700,
                     color: watchlistSummary.profit >= 0 ? 'var(--accent-green)' : '#ef4444',
                   }}
@@ -544,7 +548,7 @@ export default function liliStockQuery() {
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>收益率</div>
                 <div
                   style={{
-                    fontSize: 20,
+                    fontSize: isMobile ? 16 : 20,
                     fontWeight: 700,
                     color: watchlistSummary.profitPercent >= 0 ? 'var(--accent-green)' : '#ef4444',
                   }}
@@ -557,7 +561,7 @@ export default function liliStockQuery() {
                 onClick={refreshWatchlistPrices}
                 disabled={watchlistLoading}
                 style={{
-                  marginLeft: 'auto',
+                  marginLeft: isMobile ? 0 : 'auto',
                   padding: '8px 16px',
                   borderRadius: 8,
                   border: '1px solid var(--border-subtle)',
@@ -586,12 +590,13 @@ export default function liliStockQuery() {
               <p>暂无自选股，请在上方添加</p>
             </div>
           ) : (
-            <div className="glass-card" style={{ padding: 24, overflow: 'hidden' }}>
+            <div className="glass-card" style={{ padding: isMobile ? 12 : 24, overflow: 'auto' }}>
               <table
                 style={{
                   width: '100%',
+                  minWidth: isMobile ? 700 : 'auto',
                   borderCollapse: 'collapse',
-                  fontSize: 14,
+                  fontSize: isMobile ? 13 : 14,
                 }}
               >
                 <thead>

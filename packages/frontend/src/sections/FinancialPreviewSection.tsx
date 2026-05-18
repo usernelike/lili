@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useMobile } from '../hooks/useMobile'
 
 interface StockPreview {
   code: string
@@ -42,9 +43,11 @@ function MiniSparkline({ positive }: { positive: boolean }) {
 export default function FinancialPreviewSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const isMobile = useMobile()
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   useEffect(() => {
+    if (isMobile) return
     const ctx = gsap.context(() => {
       gsap.from('.fp-title', {
         y: 40,
@@ -63,20 +66,20 @@ export default function FinancialPreviewSection() {
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [isMobile])
 
   return (
     <div
       ref={sectionRef}
       className="h-section"
       style={{
-        width: '100vw',
-        height: '100vh',
+        width: isMobile ? '100%' : '100vw',
+        minHeight: isMobile ? 'auto' : '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '0 60px',
+        padding: isMobile ? '60px 16px' : '0 60px',
         position: 'relative',
       }}
     >
@@ -95,7 +98,7 @@ export default function FinancialPreviewSection() {
         }}
       />
 
-      <div style={{ textAlign: 'center', marginBottom: 50, zIndex: 2 }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 50, zIndex: 2 }}>
         <div
           className="fp-title"
           style={{
@@ -118,14 +121,14 @@ export default function FinancialPreviewSection() {
         <h2
           className="fp-title"
           style={{
-            fontSize: 'clamp(32px, 4vw, 48px)',
+            fontSize: 'clamp(28px, 4vw, 48px)',
             fontWeight: 700,
             marginBottom: 16,
           }}
         >
           毫秒级<span className="gradient-text">金融数据</span>
         </h2>
-        <p style={{ fontSize: 18, color: 'var(--text-secondary)', maxWidth: 550, margin: '0 auto' }}>
+        <p style={{ fontSize: isMobile ? 15 : 18, color: 'var(--text-secondary)', maxWidth: 550, margin: '0 auto' }}>
           已接入新浪财经与腾讯证券，A股实时行情零延迟推送
         </p>
       </div>
@@ -133,8 +136,8 @@ export default function FinancialPreviewSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 20,
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+          gap: isMobile ? 10 : 20,
           maxWidth: 1000,
           width: '100%',
           zIndex: 2,
@@ -151,7 +154,7 @@ export default function FinancialPreviewSection() {
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
               style={{
-                padding: 24,
+                padding: isMobile ? 16 : 24,
                 borderRadius: 16,
                 background: isHovered
                   ? 'rgba(255,255,255,0.06)'
@@ -167,17 +170,17 @@ export default function FinancialPreviewSection() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{stock.name}</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{stock.code}</div>
+                  <div style={{ fontSize: isMobile ? 15 : 18, fontWeight: 700, marginBottom: 4 }}>{stock.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{stock.code}</div>
                 </div>
-                <MiniSparkline positive={isPositive} />
+                {!isMobile && <MiniSparkline positive={isPositive} />}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                <span style={{ fontSize: 28, fontWeight: 700 }}>¥{stock.price.toFixed(2)}</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: isMobile ? 22 : 28, fontWeight: 700 }}>¥{stock.price.toFixed(2)}</span>
                 <span
                   style={{
-                    fontSize: 14,
+                    fontSize: isMobile ? 12 : 14,
                     fontWeight: 600,
                     color: isPositive ? 'var(--accent-green)' : 'var(--accent-red)',
                     display: 'flex',
@@ -185,7 +188,7 @@ export default function FinancialPreviewSection() {
                     gap: 2,
                   }}
                 >
-                  {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                  {isPositive ? <TrendingUp size={isMobile ? 12 : 14} /> : <TrendingDown size={isMobile ? 12 : 14} />}
                   {isPositive ? '+' : ''}{stock.change.toFixed(2)} ({isPositive ? '+' : ''}{stock.changePercent.toFixed(2)}%)
                 </span>
               </div>
@@ -197,7 +200,7 @@ export default function FinancialPreviewSection() {
       <button
         onClick={() => navigate('/financial')}
         style={{
-          marginTop: 40,
+          marginTop: isMobile ? 24 : 40,
           display: 'flex',
           alignItems: 'center',
           gap: 8,

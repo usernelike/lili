@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Database, TrendingUp, Search, BarChart3, Globe, Shield } from 'lucide-react'
+import { useMobile } from '../hooks/useMobile'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -70,8 +71,10 @@ const dataSources = [
 
 export default function DataSourcesSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
+  const isMobile = useMobile()
 
   useEffect(() => {
+    if (isMobile) return
     const ctx = gsap.context(() => {
       gsap.from('.ds-title', {
         y: 40,
@@ -98,7 +101,7 @@ export default function DataSourcesSection() {
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [isMobile])
 
   return (
     <div
@@ -106,17 +109,17 @@ export default function DataSourcesSection() {
       id="data-sources"
       className="h-section"
       style={{
-        width: '100vw',
-        height: '100vh',
+        width: isMobile ? '100%' : '100vw',
+        minHeight: isMobile ? 'auto' : '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '0 60px',
+        padding: isMobile ? '60px 16px' : '0 60px',
         position: 'relative',
       }}
     >
-      <div style={{ textAlign: 'center', marginBottom: 60, zIndex: 2 }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 60, zIndex: 2 }}>
         <div
           className="ds-title"
           style={{
@@ -139,14 +142,14 @@ export default function DataSourcesSection() {
         <h2
           className="ds-title"
           style={{
-            fontSize: 'clamp(32px, 4vw, 48px)',
+            fontSize: 'clamp(28px, 4vw, 48px)',
             fontWeight: 700,
             marginBottom: 16,
           }}
         >
           多源数据<span className="gradient-text">一站式聚合</span>
         </h2>
-        <p style={{ fontSize: 18, color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto' }}>
+        <p style={{ fontSize: isMobile ? 15 : 18, color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto' }}>
           已对接及即将接入国内外权威数据平台，覆盖企业征信与金融行情全链路
         </p>
       </div>
@@ -154,8 +157,8 @@ export default function DataSourcesSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 16,
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+          gap: isMobile ? 10 : 16,
           maxWidth: 1200,
           width: '100%',
           zIndex: 2,
@@ -168,21 +171,21 @@ export default function DataSourcesSection() {
               key={source.name}
               className="ds-card glass-card"
               style={{
-                padding: 24,
+                padding: isMobile ? 16 : 24,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 12,
                 transition: 'transform 0.3s, box-shadow 0.3s',
                 cursor: 'default',
-                transform: 'translateY(-4px)',
-                boxShadow: `0 12px 28px rgba(${source.color === '#3b82f6' ? '59,130,246' : source.color === '#f59e0b' ? '245,158,11' : source.color === '#ef4444' ? '239,68,68' : '16,185,129'}, 0.12)`,
+                transform: isMobile ? 'none' : 'translateY(-4px)',
+                boxShadow: isMobile ? 'none' : `0 12px 28px rgba(${source.color === '#3b82f6' ? '59,130,246' : source.color === '#f59e0b' ? '245,158,11' : source.color === '#ef4444' ? '239,68,68' : '16,185,129'}, 0.12)`,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div
                   style={{
-                    width: 48,
-                    height: 48,
+                    width: isMobile ? 36 : 48,
+                    height: isMobile ? 36 : 48,
                     borderRadius: 12,
                     background: `${source.color}15`,
                     display: 'flex',
@@ -190,7 +193,7 @@ export default function DataSourcesSection() {
                     justifyContent: 'center',
                   }}
                 >
-                  <Icon size={24} style={{ color: source.color }} />
+                  <Icon size={isMobile ? 20 : 24} style={{ color: source.color }} />
                 </div>
                 <span
                   style={{
@@ -207,14 +210,14 @@ export default function DataSourcesSection() {
               </div>
 
               <div>
-                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>{source.name}</h3>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                <h3 style={{ fontSize: isMobile ? 16 : 20, fontWeight: 700, marginBottom: 8 }}>{source.name}</h3>
+                <p style={{ fontSize: isMobile ? 12 : 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   {source.description}
                 </p>
               </div>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {source.features.map((feature) => (
+                {source.features.slice(0, isMobile ? 3 : undefined).map((feature) => (
                   <span
                     key={feature}
                     style={{
@@ -236,7 +239,7 @@ export default function DataSourcesSection() {
 
       <div
         style={{
-          marginTop: 48,
+          marginTop: isMobile ? 24 : 48,
           display: 'flex',
           alignItems: 'center',
           gap: 12,
@@ -248,7 +251,7 @@ export default function DataSourcesSection() {
         }}
       >
         <Shield size={18} style={{ color: 'var(--accent-green)' }} />
-        <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+        <span style={{ fontSize: isMobile ? 12 : 14, color: 'var(--text-secondary)' }}>
           所有数据均来自官方授权渠道，合规合法，支持商业用途
         </span>
       </div>

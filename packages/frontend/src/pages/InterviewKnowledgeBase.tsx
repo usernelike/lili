@@ -12,6 +12,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import interviewData from '../data/interviewData'
+import { useMobile } from '../hooks/useMobile'
 
 interface FavoriteItem {
   id: number
@@ -23,6 +24,7 @@ interface FavoriteItem {
 }
 
 export default function InterviewKnowledgeBase() {
+  const isMobile = useMobile()
   const [activeCategory, setActiveCategory] = useState<string>('html-css')
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
@@ -147,13 +149,13 @@ export default function InterviewKnowledgeBase() {
     <div
       style={{
         minHeight: '100vh',
-        padding: '100px 40px 60px',
+        padding: isMobile ? '80px 16px 40px' : '100px 40px 60px',
         maxWidth: 1400,
         margin: '0 auto',
       }}
     >
       {/* Header */}
-      <div style={{ marginBottom: 40 }}>
+      <div style={{ marginBottom: isMobile ? 24 : 40 }}>
         <div
           style={{
             display: 'inline-flex',
@@ -172,10 +174,10 @@ export default function InterviewKnowledgeBase() {
           <BookOpen size={14} />
           面试知识库
         </div>
-        <h1 style={{ fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 700, marginBottom: 12 }}>
+        <h1 style={{ fontSize: isMobile ? 24 : 'clamp(28px, 3vw, 40px)', fontWeight: 700, marginBottom: 12 }}>
           全栈面试<span className="gradient-text">知识汇总</span>
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 16, maxWidth: 600 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: isMobile ? 14 : 16, maxWidth: 600 }}>
           覆盖前端核心知识点，从 HTML/CSS 到算法与数据结构，助你系统备战技术面试。
         </p>
       </div>
@@ -237,14 +239,14 @@ export default function InterviewKnowledgeBase() {
       </div>
 
       {/* Main Content */}
-      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexDirection: isMobile ? 'column' : 'row' }}>
         {/* Sidebar Categories */}
         <div
           style={{
-            width: 220,
+            width: isMobile ? '100%' : 220,
             flexShrink: 0,
-            position: 'sticky',
-            top: 100,
+            position: isMobile ? 'relative' : 'sticky',
+            top: isMobile ? 0 : 100,
           }}
         >
           <div
@@ -253,6 +255,8 @@ export default function InterviewKnowledgeBase() {
               borderRadius: 16,
               border: '1px solid var(--border-subtle)',
               overflow: 'hidden',
+              display: isMobile ? 'flex' : 'block',
+              overflowX: isMobile ? 'auto' : 'hidden',
             }}
           >
             {filteredData.map((cat) => {
@@ -263,13 +267,14 @@ export default function InterviewKnowledgeBase() {
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
                   style={{
-                    width: '100%',
+                    width: isMobile ? 'auto' : '100%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '14px 18px',
+                    padding: isMobile ? '10px 14px' : '14px 18px',
                     border: 'none',
-                    borderBottom: '1px solid var(--border-subtle)',
+                    borderBottom: isMobile ? 'none' : '1px solid var(--border-subtle)',
+                    borderRight: isMobile ? '1px solid var(--border-subtle)' : 'none',
                     background: isActive ? 'rgba(0, 212, 255, 0.08)' : 'transparent',
                     color: isActive ? 'var(--accent-cyan)' : 'var(--text-secondary)',
                     fontSize: 14,
@@ -278,6 +283,8 @@ export default function InterviewKnowledgeBase() {
                     transition: 'all 0.2s',
                     fontFamily: 'inherit',
                     textAlign: 'left',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
@@ -300,6 +307,7 @@ export default function InterviewKnowledgeBase() {
                       background: isActive ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)',
                       padding: '2px 8px',
                       borderRadius: 10,
+                      marginLeft: 8,
                     }}
                   >
                     {count}
@@ -311,9 +319,9 @@ export default function InterviewKnowledgeBase() {
         </div>
 
         {/* Knowledge Items */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
           {activeCategoryData ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 16 }}>
               {activeCategoryData.items.map((item) => {
                 const isExpanded = expandedItems.has(item.id)
                 const favorited = isFavorited(item.id)
@@ -336,11 +344,11 @@ export default function InterviewKnowledgeBase() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 12,
-                        padding: '18px 24px',
+                        padding: isMobile ? '14px 16px' : '18px 24px',
                         border: 'none',
                         background: 'transparent',
                         color: 'var(--text-primary)',
-                        fontSize: 16,
+                        fontSize: isMobile ? 14 : 16,
                         fontWeight: 600,
                         cursor: 'pointer',
                         textAlign: 'left',
@@ -348,9 +356,9 @@ export default function InterviewKnowledgeBase() {
                       }}
                     >
                       {isExpanded ? (
-                        <ChevronDown size={18} color="var(--accent-cyan)" />
+                        <ChevronDown size={isMobile ? 16 : 18} color="var(--accent-cyan)" />
                       ) : (
-                        <ChevronRight size={18} color="var(--text-muted)" />
+                        <ChevronRight size={isMobile ? 16 : 18} color="var(--text-muted)" />
                       )}
                       <span style={{ flex: 1 }}>{item.question}</span>
                       {item.tags?.map((tag) => (
@@ -363,7 +371,7 @@ export default function InterviewKnowledgeBase() {
                             padding: '3px 10px',
                             borderRadius: 8,
                             fontWeight: 500,
-                            display: 'flex',
+                            display: isMobile ? 'none' : 'flex',
                             alignItems: 'center',
                             gap: 4,
                           }}
@@ -400,9 +408,9 @@ export default function InterviewKnowledgeBase() {
                     {isExpanded && (
                       <div
                         style={{
-                          padding: '0 24px 24px 54px',
+                          padding: isMobile ? '0 16px 16px 44px' : '0 24px 24px 54px',
                           color: 'var(--text-secondary)',
-                          fontSize: 14,
+                          fontSize: isMobile ? 13 : 14,
                           lineHeight: 1.8,
                           whiteSpace: 'pre-wrap',
                         }}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { Search, Building2, Users, Gavel, FileText, BadgeCheck, ExternalLink } from 'lucide-react'
+import { useMobile } from '../hooks/useMobile'
 
 const dataDimensions = [
   { icon: Building2, label: '工商信息', desc: '注册信息、经营范围、注册资本' },
@@ -19,10 +20,12 @@ const platforms = [
 
 export default function EnterprisePreviewSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
+  const isMobile = useMobile()
   const [searchValue, setSearchValue] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState(platforms[0])
 
   useEffect(() => {
+    if (isMobile) return
     const ctx = gsap.context(() => {
       gsap.from('.ep-title', {
         y: 40,
@@ -48,7 +51,7 @@ export default function EnterprisePreviewSection() {
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [isMobile])
 
   const handleSearch = () => {
     if (searchValue.trim()) {
@@ -61,13 +64,13 @@ export default function EnterprisePreviewSection() {
       ref={sectionRef}
       className="h-section"
       style={{
-        width: '100vw',
-        height: '100vh',
+        width: isMobile ? '100%' : '100vw',
+        minHeight: isMobile ? 'auto' : '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '0 60px',
+        padding: isMobile ? '60px 16px' : '0 60px',
         position: 'relative',
       }}
     >
@@ -86,7 +89,7 @@ export default function EnterprisePreviewSection() {
         }}
       />
 
-      <div style={{ textAlign: 'center', marginBottom: 50, zIndex: 2 }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 50, zIndex: 2 }}>
         <div
           className="ep-title"
           style={{
@@ -109,14 +112,14 @@ export default function EnterprisePreviewSection() {
         <h2
           className="ep-title"
           style={{
-            fontSize: 'clamp(32px, 4vw, 48px)',
+            fontSize: 'clamp(28px, 4vw, 48px)',
             fontWeight: 700,
             marginBottom: 16,
           }}
         >
           2.8亿企业<span className="text-gradient-cyan">全景画像</span>
         </h2>
-        <p style={{ fontSize: 18, color: 'var(--text-secondary)', maxWidth: 550, margin: '0 auto' }}>
+        <p style={{ fontSize: isMobile ? 15 : 18, color: 'var(--text-secondary)', maxWidth: 550, margin: '0 auto' }}>
           即将接入天眼查全量数据库，覆盖工商、司法、经营、知识产权等全维度信息
         </p>
       </div>
@@ -127,10 +130,11 @@ export default function EnterprisePreviewSection() {
         style={{
           display: 'flex',
           gap: 12,
-          marginBottom: 50,
+          marginBottom: isMobile ? 32 : 50,
           zIndex: 2,
           maxWidth: 700,
           width: '100%',
+          flexDirection: isMobile ? 'column' : 'row',
         }}
       >
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -139,7 +143,7 @@ export default function EnterprisePreviewSection() {
               key={p.name}
               onClick={() => setSelectedPlatform(p)}
               style={{
-                padding: '12px 16px',
+                padding: isMobile ? '10px 12px' : '12px 16px',
                 borderRadius: 10,
                 border: '1px solid',
                 borderColor: selectedPlatform.name === p.name ? '#3b82f6' : 'var(--border-subtle)',
@@ -167,7 +171,7 @@ export default function EnterprisePreviewSection() {
             style={{
               width: '100%',
               padding: '12px 16px',
-              paddingRight: 100,
+              paddingRight: isMobile ? 80 : 100,
               borderRadius: 12,
               border: '1px solid var(--border-subtle)',
               background: 'var(--bg-card)',
@@ -191,7 +195,7 @@ export default function EnterprisePreviewSection() {
               right: 6,
               top: '50%',
               transform: 'translateY(-50%)',
-              padding: '8px 16px',
+              padding: isMobile ? '6px 12px' : '8px 16px',
               borderRadius: 8,
               border: 'none',
               background: '#3b82f6',
@@ -205,7 +209,7 @@ export default function EnterprisePreviewSection() {
               gap: 4,
             }}
           >
-            <Search size={14} /> 搜索
+            <Search size={14} /> {isMobile ? '' : '搜索'}
           </button>
         </div>
       </div>
@@ -214,8 +218,8 @@ export default function EnterprisePreviewSection() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
-          gap: 16,
+          gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
+          gap: isMobile ? 10 : 16,
           maxWidth: 1100,
           width: '100%',
           zIndex: 2,
@@ -228,7 +232,7 @@ export default function EnterprisePreviewSection() {
               key={dim.label}
               className="ep-dim"
               style={{
-                padding: 24,
+                padding: isMobile ? 14 : 24,
                 borderRadius: 14,
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid var(--border-subtle)',
@@ -246,8 +250,8 @@ export default function EnterprisePreviewSection() {
             >
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: isMobile ? 36 : 44,
+                  height: isMobile ? 36 : 44,
                   borderRadius: 12,
                   background: 'rgba(59,130,246,0.12)',
                   display: 'flex',
@@ -256,10 +260,10 @@ export default function EnterprisePreviewSection() {
                   margin: '0 auto 12px',
                 }}
               >
-                <Icon size={20} style={{ color: '#3b82f6' }} />
+                <Icon size={isMobile ? 16 : 20} style={{ color: '#3b82f6' }} />
               </div>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{dim.label}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{dim.desc}</div>
+              <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 600, marginBottom: 6 }}>{dim.label}</div>
+              <div style={{ fontSize: isMobile ? 11 : 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{dim.desc}</div>
             </div>
           )
         })}
@@ -267,12 +271,12 @@ export default function EnterprisePreviewSection() {
 
       <div
         style={{
-          marginTop: 32,
+          marginTop: isMobile ? 24 : 32,
           display: 'flex',
           alignItems: 'center',
           gap: 8,
           color: 'var(--text-muted)',
-          fontSize: 13,
+          fontSize: isMobile ? 12 : 13,
           zIndex: 2,
         }}
       >

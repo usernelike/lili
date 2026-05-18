@@ -15,9 +15,12 @@ import {
   Minus,
 } from 'lucide-react'
 import { useStockDetail, useTechnicalIndicators } from '../hooks/useStockData'
+import { useMobile } from '../hooks/useMobile'
 
 // 蜡烛图 K 线组件
-function CandlestickChart({ data, width = 600, height = 200 }: { data: Array<{ date: string; open: number; close: number; high: number; low: number }>; width?: number; height?: number }) {
+function CandlestickChart({ data, width: propWidth, height = 200 }: { data: Array<{ date: string; open: number; close: number; high: number; low: number }>; width?: number; height?: number }) {
+  const isMobile = useMobile()
+  const width = propWidth || (isMobile ? 340 : 600)
   if (data.length === 0) {
     return (
       <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
@@ -92,6 +95,7 @@ function CandlestickChart({ data, width = 600, height = 200 }: { data: Array<{ d
 
 // 技术指标面板
 function TechnicalPanel({ code }: { code: string }) {
+  const isMobile = useMobile()
   const { indicators, loading, error } = useTechnicalIndicators(code)
 
   if (loading) {
@@ -165,11 +169,11 @@ function TechnicalPanel({ code }: { code: string }) {
   ]
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 16 }}>
       {sections.map((sec) => {
         const Icon = sec.icon
         return (
-          <div key={sec.title} style={{ padding: 16, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
+          <div key={sec.title} style={{ padding: isMobile ? 12 : 16, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <Icon size={14} style={{ color: 'var(--accent-cyan)' }} />
               <span style={{ fontSize: 13, fontWeight: 600 }}>{sec.title}</span>
@@ -246,28 +250,30 @@ function AnalysisCard({ detail }: { detail: NonNullable<ReturnType<typeof useSto
 
   const scoreColor = score >= 70 ? 'var(--accent-green)' : score >= 40 ? 'var(--accent-orange)' : 'var(--accent-red)'
   const scoreLabel = score >= 70 ? '偏多' : score >= 40 ? '中性' : '偏空'
+  const isMobile = useMobile()
 
   return (
     <div>
       {/* 综合评分 */}
       <div
         style={{
-          padding: 24,
+          padding: isMobile ? 16 : 24,
           borderRadius: 14,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
           marginBottom: 20,
           display: 'flex',
           alignItems: 'center',
-          gap: 24,
+          gap: isMobile ? 16 : 24,
+          flexWrap: 'wrap',
         }}
       >
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>综合评分</div>
-          <div style={{ fontSize: 42, fontWeight: 800, color: scoreColor }}>{score}</div>
+          <div style={{ fontSize: isMobile ? 32 : 42, fontWeight: 800, color: scoreColor }}>{score}</div>
           <div style={{ fontSize: 14, color: scoreColor, fontWeight: 600 }}>{scoreLabel}</div>
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
           <div
             style={{
               height: 8,
@@ -286,7 +292,7 @@ function AnalysisCard({ detail }: { detail: NonNullable<ReturnType<typeof useSto
               }}
             />
           </div>
-          <div style={{ marginTop: 12, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          <div style={{ marginTop: 12, fontSize: isMobile ? 12 : 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
             <AlertTriangle size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: 'var(--accent-orange)' }} />
             AI 生成分析，不构成投资建议。投资有风险，入市需谨慎。
           </div>
@@ -294,12 +300,12 @@ function AnalysisCard({ detail }: { detail: NonNullable<ReturnType<typeof useSto
       </div>
 
       {/* 信号卡片 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 12 }}>
         {signals.map((sig) => (
           <div
             key={sig.label}
             style={{
-              padding: 16,
+              padding: isMobile ? 12 : 16,
               borderRadius: 12,
               background: 'var(--bg-card)',
               border: '1px solid var(--border-subtle)',
@@ -331,11 +337,12 @@ function AnalysisCard({ detail }: { detail: NonNullable<ReturnType<typeof useSto
 export default function StockDetail() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
+  const isMobile = useMobile()
   const { detail, loading, error } = useStockDetail(code || '')
 
   if (loading) {
     return (
-      <div style={{ padding: '100px 40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <div style={{ padding: isMobile ? '80px 16px' : '100px 40px', textAlign: 'center', color: 'var(--text-muted)' }}>
         <Activity size={32} style={{ marginBottom: 16, animation: 'spin 1s linear infinite' }} />
         <p>加载股票数据中...</p>
       </div>
@@ -344,7 +351,7 @@ export default function StockDetail() {
 
   if (error || !detail) {
     return (
-      <div style={{ padding: '100px 40px', textAlign: 'center' }}>
+      <div style={{ padding: isMobile ? '80px 16px' : '100px 40px', textAlign: 'center' }}>
         <p style={{ color: 'var(--accent-red)', marginBottom: 16 }}>{error || '股票数据获取失败'}</p>
         <button
           onClick={() => navigate('/financial')}
@@ -369,7 +376,7 @@ export default function StockDetail() {
   const color = isUp ? 'var(--accent-green)' : 'var(--accent-red)'
 
   return (
-    <div style={{ padding: '100px 40px 60px', maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? '80px 16px 40px' : '100px 40px 60px', maxWidth: 1100, margin: '0 auto' }}>
       {/* Header */}
       <button
         onClick={() => navigate('/financial')}
@@ -394,7 +401,7 @@ export default function StockDetail() {
       {/* 基本信息 */}
       <div
         style={{
-          padding: 28,
+          padding: isMobile ? 20 : 28,
           borderRadius: 16,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
@@ -403,14 +410,14 @@ export default function StockDetail() {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 20 }}>
           <div>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>{detail.name}</div>
-            <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
+            <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 700 }}>{detail.name}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
               {detail.code} · {detail.market} · {detail.updateTime ? detail.updateTime.slice(0, 4) + '-' + detail.updateTime.slice(4, 6) + '-' + detail.updateTime.slice(6, 8) : ''}
             </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 36, fontWeight: 800, color }}>¥{detail.price.toFixed(2)}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'flex-end' }}>
+          <div style={{ textAlign: isMobile ? 'left' : 'right' }}>
+            <div style={{ fontSize: isMobile ? 28 : 36, fontWeight: 800, color }}>¥{detail.price.toFixed(2)}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
               <span style={{ fontSize: 16, color, fontWeight: 600 }}>
                 {isUp ? '+' : ''}{detail.change.toFixed(2)}
               </span>
@@ -434,8 +441,8 @@ export default function StockDetail() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            gap: 16,
+            gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
+            gap: isMobile ? 10 : 16,
             marginTop: 24,
             paddingTop: 20,
             borderTop: '1px solid var(--border-subtle)',
@@ -450,8 +457,8 @@ export default function StockDetail() {
             { label: '成交额', value: detail.amount > 0 ? (detail.amount / 10000).toFixed(0) + '万' : '-' },
           ].map((item) => (
             <div key={item.label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{item.label}</div>
-              <div style={{ fontSize: 16, fontWeight: 600 }}>{item.value}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{item.label}</div>
+              <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 600 }}>{item.value}</div>
             </div>
           ))}
         </div>
@@ -460,7 +467,7 @@ export default function StockDetail() {
       {/* K线走势 */}
       <div
         style={{
-          padding: 24,
+          padding: isMobile ? 16 : 24,
           borderRadius: 16,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
@@ -469,7 +476,7 @@ export default function StockDetail() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <BarChart3 size={20} style={{ color: 'var(--accent-cyan)' }} />
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>K线走势</h2>
+          <h2 style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700 }}>K线走势</h2>
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{detail.kline.length > 0 ? `近${detail.kline.length}个交易日` : ''}</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
@@ -480,7 +487,7 @@ export default function StockDetail() {
       {/* 技术指标 */}
       <div
         style={{
-          padding: 24,
+          padding: isMobile ? 16 : 24,
           borderRadius: 16,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
@@ -489,16 +496,16 @@ export default function StockDetail() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <Activity size={20} style={{ color: 'var(--accent-cyan)' }} />
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>技术指标</h2>
+          <h2 style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700 }}>技术指标</h2>
         </div>
         <TechnicalPanel code={detail.code} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 24 }}>
         {/* 买卖盘 */}
         <div
           style={{
-            padding: 24,
+            padding: isMobile ? 16 : 24,
             borderRadius: 16,
             background: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
@@ -506,7 +513,7 @@ export default function StockDetail() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <Target size={18} style={{ color: 'var(--accent-cyan)' }} />
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>买卖盘</h3>
+            <h3 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 700 }}>买卖盘</h3>
           </div>
           <div style={{ display: 'flex', gap: 16 }}>
             {/* 买盘 */}
@@ -537,7 +544,7 @@ export default function StockDetail() {
         {/* 基本面 */}
         <div
           style={{
-            padding: 24,
+            padding: isMobile ? 16 : 24,
             borderRadius: 16,
             background: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
@@ -545,7 +552,7 @@ export default function StockDetail() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
             <Gauge size={18} style={{ color: 'var(--accent-cyan)' }} />
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>基本面</h3>
+            <h3 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 700 }}>基本面</h3>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
             {[
@@ -574,7 +581,7 @@ export default function StockDetail() {
       {/* 近期涨跌 */}
       <div
         style={{
-          padding: 24,
+          padding: isMobile ? 16 : 24,
           borderRadius: 16,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
@@ -582,8 +589,8 @@ export default function StockDetail() {
           marginBottom: 24,
         }}
       >
-        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>近期涨跌</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        <h3 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 700, marginBottom: 16 }}>近期涨跌</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 16 }}>
           {[
             { label: '今日', value: detail.changePercent, period: '' },
             { label: '5日', value: detail.change5d, period: 'change5d' },
@@ -595,14 +602,14 @@ export default function StockDetail() {
               <div
                 key={item.label}
                 style={{
-                  padding: 16,
+                  padding: isMobile ? 12 : 16,
                   borderRadius: 10,
                   background: 'rgba(255,255,255,0.03)',
                   textAlign: 'center',
                 }}
               >
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{item.label}</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: up ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                <div style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, color: up ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                   {up ? '+' : ''}{item.value.toFixed(2)}%
                 </div>
               </div>
@@ -614,7 +621,7 @@ export default function StockDetail() {
       {/* AI 分析 */}
       <div
         style={{
-          padding: 24,
+          padding: isMobile ? 16 : 24,
           borderRadius: 16,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
@@ -622,7 +629,7 @@ export default function StockDetail() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <Activity size={18} style={{ color: 'var(--accent-purple)' }} />
-          <h3 style={{ fontSize: 16, fontWeight: 700 }}>AI 分析</h3>
+          <h3 style={{ fontSize: isMobile ? 15 : 16, fontWeight: 700 }}>AI 分析</h3>
         </div>
         <AnalysisCard detail={detail} />
       </div>
