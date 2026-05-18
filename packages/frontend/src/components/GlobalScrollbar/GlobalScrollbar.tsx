@@ -1,7 +1,24 @@
 import { useEffect, useRef } from 'react'
 import { OverlayScrollbars } from 'overlayscrollbars'
 
-const scrollbarOptions = {
+const viewportOptions = {
+  scrollbars: {
+    theme: 'os-theme-custom',
+    visibility: 'auto' as const,
+    autoHide: 'scroll' as const,
+    autoHideDelay: 500,
+    autoHideSuspend: false,
+    dragScroll: true,
+    clickScroll: true as const,
+    pointers: null,
+  },
+  overflow: {
+    x: 'hidden' as const,
+    y: 'scroll' as const,
+  },
+}
+
+const defaultOptions = {
   scrollbars: {
     theme: 'os-theme-custom',
     visibility: 'auto' as const,
@@ -25,8 +42,8 @@ export default function GlobalScrollbar() {
     if (initialized.current) return
     initialized.current = true
 
-    // 初始化 body 的滚动条
-    const osInstance = OverlayScrollbars(document.body, scrollbarOptions)
+    // 初始化 viewport 滚动条（html 元素）
+    const osInstance = OverlayScrollbars(document.documentElement, viewportOptions)
 
     // 为已存在的可滚动容器添加滚动条
     const initScrollableElements = () => {
@@ -35,7 +52,7 @@ export default function GlobalScrollbar() {
       )
       scrollables.forEach((el) => {
         if (el instanceof HTMLElement && !el.hasAttribute('data-os-initialized')) {
-          OverlayScrollbars(el, scrollbarOptions)
+          OverlayScrollbars(el, defaultOptions)
           el.setAttribute('data-os-initialized', 'true')
         }
       })

@@ -36,26 +36,52 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
 }
 
-/* Hide default scrollbars globally */
-::-webkit-scrollbar {
+/* ============================================
+   Hide ALL native scrollbars globally
+   ============================================ */
+
+/* Universal: every element */
+*,
+*::before,
+*::after {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* WebKit: force width/height to 0 */
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
   display: none !important;
 }
 
-html {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+*::-webkit-scrollbar-track {
+  background: transparent !important;
 }
 
+*::-webkit-scrollbar-thumb {
+  background: transparent !important;
+}
+
+/* html / body explicit */
+html,
 body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
 }
 
 /* Mobile responsive base */
@@ -128,20 +154,14 @@ body {
   min-width: 30px !important;
 }
 
-/* Auto-hide animation */
-.os-theme-custom .os-scrollbar {
-  opacity: 0;
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.os-theme-custom.os-scrollbar-visible .os-scrollbar,
-.os-theme-custom:hover .os-scrollbar {
-  opacity: 1;
-}
-
 /* Active state glow effect */
 .os-theme-custom.os-scrollbar-active .os-scrollbar-handle {
   background: rgba(0, 212, 255, 0.5) !important;
+}
+
+/* Ensure OS scrollbars don't overlap content */
+.os-theme-custom .os-scrollbar {
+  z-index: 9999;
 }
 
 /* Utility classes */

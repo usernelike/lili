@@ -342,7 +342,7 @@ export default function StockDetail() {
 
   if (loading) {
     return (
-      <div style={{ padding: isMobile ? '80px 16px' : '100px 40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'var(--text-muted)' }}>
         <Activity size={32} style={{ marginBottom: 16, animation: 'spin 1s linear infinite' }} />
         <p>加载股票数据中...</p>
       </div>
@@ -351,7 +351,7 @@ export default function StockDetail() {
 
   if (error || !detail) {
     return (
-      <div style={{ padding: isMobile ? '80px 16px' : '100px 40px', textAlign: 'center' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <p style={{ color: 'var(--accent-red)', marginBottom: 16 }}>{error || '股票数据获取失败'}</p>
         <button
           onClick={() => navigate('/financial')}
