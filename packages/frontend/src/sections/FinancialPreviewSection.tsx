@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -22,10 +22,10 @@ const previewStocks: StockPreview[] = [
 ]
 
 function MiniSparkline({ positive }: { positive: boolean }) {
-  const points = Array.from({ length: 20 }, () => Math.random() * 30 + 10)
-  const path = points
-    .map((y, i) => `${i * 5},${40 - y}`)
-    .join(' ')
+  const path = useMemo(() => {
+    const points = Array.from({ length: 20 }, () => Math.random() * 30 + 10)
+    return points.map((y, i) => `${i * 5},${40 - y}`).join(' ')
+  }, [])
 
   return (
     <svg width={100} height={40} viewBox="0 0 100 40">

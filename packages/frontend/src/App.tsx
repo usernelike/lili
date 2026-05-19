@@ -46,6 +46,8 @@ function App() {
           <Route path="legal" element={<RequireAuth><Legal /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Route>
+        {/* 兜底：未匹配任何路由时显示 404（如 /login/abc 等） */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   )

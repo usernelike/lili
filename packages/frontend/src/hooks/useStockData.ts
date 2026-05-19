@@ -1,5 +1,5 @@
 import { apiFetch } from '../utils/api'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 export interface StockData {
   code: string
@@ -179,8 +179,11 @@ export function useStockSearch() {
 export function useMarketIndices() {
   const [indices, setIndices] = useState<StockData[]>([])
   const [loading, setLoading] = useState(false)
+  const fetchingRef = useRef(false)
 
   const fetchIndices = useCallback(async () => {
+    if (fetchingRef.current) return
+    fetchingRef.current = true
     setLoading(true)
     try {
       const res = await apiFetch('/api/financial/indices')
@@ -188,10 +191,11 @@ export function useMarketIndices() {
       if (data.success) {
         setIndices(data.data)
       }
-    } catch (err) {
-      console.error('Failed to fetch indices:', err)
+    } catch {
+      // ignore
     } finally {
       setLoading(false)
+      fetchingRef.current = false
     }
   }, [])
 
@@ -207,8 +211,11 @@ export function useMarketIndices() {
 export function useCommodities() {
   const [commodities, setCommodities] = useState<CommodityData[]>([])
   const [loading, setLoading] = useState(false)
+  const fetchingRef = useRef(false)
 
   const fetchCommodities = useCallback(async () => {
+    if (fetchingRef.current) return
+    fetchingRef.current = true
     setLoading(true)
     try {
       const res = await apiFetch('/api/financial/commodities')
@@ -216,10 +223,11 @@ export function useCommodities() {
       if (data.success) {
         setCommodities(data.data)
       }
-    } catch (err) {
-      console.error('Failed to fetch commodities:', err)
+    } catch {
+      // ignore
     } finally {
       setLoading(false)
+      fetchingRef.current = false
     }
   }, [])
 
@@ -341,8 +349,8 @@ export function useWatchlist() {
       if (data.success) {
         setItems(data.data)
       }
-    } catch (err) {
-      console.error('Failed to fetch watchlist:', err)
+    } catch {
+      // ignore
     } finally {
       setLoading(false)
     }
@@ -365,8 +373,7 @@ export function useWatchlist() {
         return true
       }
       return false
-    } catch (err) {
-      console.error('Failed to add watchlist item:', err)
+    } catch {
       return false
     }
   }, [])
@@ -380,8 +387,7 @@ export function useWatchlist() {
         return true
       }
       return false
-    } catch (err) {
-      console.error('Failed to remove watchlist item:', err)
+    } catch {
       return false
     }
   }, [])
@@ -400,8 +406,8 @@ export function usePositions() {
     setLoading(true)
     try {
       const [posRes, sumRes] = await Promise.all([
-        fetch('/api/financial/positions'),
-        fetch('/api/financial/positions/summary'),
+        apiFetch('/api/financial/positions'),
+        apiFetch('/api/financial/positions/summary'),
       ])
       const posData = await posRes.json()
       const sumData = await sumRes.json()
@@ -411,8 +417,8 @@ export function usePositions() {
       if (sumData.success) {
         setSummary(sumData.data)
       }
-    } catch (err) {
-      console.error('Failed to fetch positions:', err)
+    } catch {
+      // ignore
     } finally {
       setLoading(false)
     }

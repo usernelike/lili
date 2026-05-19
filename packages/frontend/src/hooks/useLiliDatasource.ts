@@ -52,9 +52,8 @@ export function useLiliQuery() {
         setError(json.message || '查询失败')
         return null
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : '网络请求失败'
-      setError(msg)
+    } catch {
+      setError('网络请求失败')
       return null
     } finally {
       setLoading(false)
@@ -86,8 +85,8 @@ export function useLiliWatchlist() {
         }))
         setItems(mapped)
       }
-    } catch (err) {
-      console.error('获取自选股失败:', err)
+    } catch {
+      // ignore
     } finally {
       setLoading(false)
     }
@@ -117,8 +116,8 @@ export function useLiliWatchlist() {
         await fetchItems()
         return true
       }
-    } catch (err) {
-      console.error('添加自选股失败:', err)
+    } catch {
+      // ignore
     }
     return false
   }, [fetchItems])
@@ -133,8 +132,8 @@ export function useLiliWatchlist() {
         await fetchItems()
         return true
       }
-    } catch (err) {
-      console.error('删除自选股失败:', err)
+    } catch {
+      // ignore
     }
     return false
   }, [fetchItems])
@@ -154,8 +153,8 @@ export function useLiliWatchlist() {
         await fetchItems()
         return true
       }
-    } catch (err) {
-      console.error('更新自选股失败:', err)
+    } catch {
+      // ignore
     }
     return false
   }, [fetchItems])

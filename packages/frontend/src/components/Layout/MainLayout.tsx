@@ -30,11 +30,14 @@ export default function MainLayout() {
   useEffect(() => {
     if (menuOpen) {
       document.body.style.overflow = 'hidden'
+      document.body.dataset.scrollLocked = 'true'
     } else {
       document.body.style.overflow = ''
+      delete document.body.dataset.scrollLocked
     }
     return () => {
       document.body.style.overflow = ''
+      delete document.body.dataset.scrollLocked
     }
   }, [menuOpen])
 

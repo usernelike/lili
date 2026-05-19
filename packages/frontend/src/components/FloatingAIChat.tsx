@@ -101,10 +101,12 @@ export default function FloatingAIChat() {
 
     try {
       const history = messages.map((m) => ({ role: m.role, content: m.content }))
+      const controller = new AbortController()
       const res = await apiFetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMsg.content, history }),
+        signal: controller.signal,
       })
 
       if (!res.ok) {

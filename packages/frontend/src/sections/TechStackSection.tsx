@@ -243,6 +243,7 @@ export default function TechStackSection() {
             <Code2 size={16} /> GitHub
           </a>
           <button
+            onClick={() => navigate('/financial')}
             style={{
               display: 'flex',
               alignItems: 'center',

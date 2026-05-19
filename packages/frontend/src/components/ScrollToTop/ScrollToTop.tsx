@@ -17,8 +17,12 @@ export default function ScrollToTop() {
       }
     })
 
-    // Ensure body overflow is reset
-    document.body.style.overflow = ''
+    // Only reset body overflow if no overlay (mobile menu / modal) is active.
+    // Other components may legitimately lock body scroll.
+    const isBodyLockedByOther = document.body.dataset.scrollLocked === 'true'
+    if (!isBodyLockedByOther) {
+      document.body.style.overflow = ''
+    }
   }, [pathname])
 
   return null

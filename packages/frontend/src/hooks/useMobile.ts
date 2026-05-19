@@ -7,12 +7,19 @@ export function useMobile(breakpoint = 768): boolean {
   })
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= breakpoint)
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        setIsMobile(window.innerWidth <= breakpoint)
+      }, 150)
     }
     window.addEventListener('resize', handleResize)
     handleResize()
-    return () => window.removeEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (timer) clearTimeout(timer)
+    }
   }, [breakpoint])
 
   return isMobile

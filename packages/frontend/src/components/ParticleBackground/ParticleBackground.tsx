@@ -88,14 +88,15 @@ export default function ParticleBackground() {
     createParticles()
     draw()
 
-    window.addEventListener('resize', () => {
+    const handleResize = () => {
       resize()
       createParticles()
-    })
+    }
+    window.addEventListener('resize', handleResize)
 
     return () => {
       cancelAnimationFrame(animationId)
-      window.removeEventListener('resize', resize)
+      window.removeEventListener('resize', handleResize)
     }
   }, [])
 

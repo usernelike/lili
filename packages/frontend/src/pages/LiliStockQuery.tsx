@@ -35,7 +35,7 @@ function getMarketFromCode(code: string): string {
   return ''
 }
 
-export default function liliStockQuery() {
+export default function LiliStockQuery() {
   const isMobile = useMobile()
   const [tickerInput, setTickerInput] = useState('')
   const [queryType, setQueryType] = useState<LiliQueryType>('realtime_price')

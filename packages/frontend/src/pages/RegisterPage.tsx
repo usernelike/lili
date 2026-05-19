@@ -216,7 +216,7 @@ export default function RegisterPage() {
                   border: '1px solid var(--border-subtle)',
                   background: 'rgba(255,255,255,0.03)',
                   color: 'var(--text-primary)',
-                  fontSize: 15,
+                  fontSize: isMobile ? 16 : 15,
                   fontFamily: 'inherit',
                   outline: 'none',
                 }}
@@ -251,7 +251,7 @@ export default function RegisterPage() {
                   border: '1px solid var(--border-subtle)',
                   background: 'rgba(255,255,255,0.03)',
                   color: 'var(--text-primary)',
-                  fontSize: 15,
+                  fontSize: isMobile ? 16 : 15,
                   fontFamily: 'inherit',
                   outline: 'none',
                 }}
@@ -290,7 +290,7 @@ export default function RegisterPage() {
                     border: '1px solid var(--border-subtle)',
                     background: 'rgba(255,255,255,0.03)',
                     color: 'var(--text-primary)',
-                    fontSize: 15,
+                    fontSize: isMobile ? 16 : 15,
                     fontFamily: 'inherit',
                     outline: 'none',
                   }}
@@ -343,7 +343,7 @@ export default function RegisterPage() {
                   border: '1px solid var(--border-subtle)',
                   background: 'rgba(255,255,255,0.03)',
                   color: 'var(--text-primary)',
-                  fontSize: 15,
+                  fontSize: isMobile ? 16 : 15,
                   fontFamily: 'inherit',
                   outline: 'none',
                 }}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { AnimatedCharacters } from '../components/AnimatedCharacters'
 import { Eye, EyeOff } from 'lucide-react'
@@ -13,13 +13,6 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
-
-  useEffect(() => {
-    setUsername('')
-    setPassword('')
-    setShowPassword(false)
-    setError('')
-  }, [])
 
   const handleFocus = () => setIsTyping(true)
   const handleBlur = () => setIsTyping(false)
@@ -221,7 +214,7 @@ export default function LoginPage() {
                   border: '1px solid var(--border-subtle)',
                   background: 'rgba(255,255,255,0.03)',
                   color: 'var(--text-primary)',
-                  fontSize: 15,
+                  fontSize: isMobile ? 16 : 15,
                   fontFamily: 'inherit',
                   outline: 'none',
                   transition: 'all 0.2s',
@@ -258,7 +251,7 @@ export default function LoginPage() {
                     border: '1px solid var(--border-subtle)',
                     background: 'rgba(255,255,255,0.03)',
                     color: 'var(--text-primary)',
-                    fontSize: 15,
+                    fontSize: isMobile ? 16 : 15,
                     fontFamily: 'inherit',
                     outline: 'none',
                     transition: 'all 0.2s',

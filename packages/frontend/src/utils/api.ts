@@ -1,10 +1,29 @@
+const API_TIMEOUT = 30000 // 30s
+
 export function apiFetch(url: string, options: RequestInit = {}) {
   const token = localStorage.getItem('token')
-  const headers: Record<string, string> = {
-    ...(options.headers as Record<string, string>),
+  const headers = new Headers(options.headers)
+  if (!headers.has('Content-Type') && options.body && typeof options.body === 'string') {
+    headers.set('Content-Type', 'application/json')
   }
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+    headers.set('Authorization', `Bearer ${token}`)
   }
-  return fetch(url, { ...options, headers })
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT)
+
+  return fetch(url, { ...options, headers, signal: controller.signal })
+    .then((res) => {
+      clearTimeout(timeoutId)
+      if (res.status === 401) {
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+      }
+      return res
+    })
+    .catch((err) => {
+      clearTimeout(timeoutId)
+      throw err
+    })
 }
