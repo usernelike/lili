@@ -1,0 +1,16 @@
+# Project Knowledge Base
+
+This project uses CatPaw Skills stored in `.catpaw/skills/` directory.
+Each skill contains domain-specific rules in `SKILL.md` format.
+
+**When working on this project, read and follow the rules in:**
+- `.catpaw/skills/frontend-component/SKILL.md` — Frontend component & style conventions
+- `.catpaw/skills/api-convention/SKILL.md` — API design & calling conventions
+- `.catpaw/skills/stock-data-parser/SKILL.md` — Tencent Finance API data parsing
+- `.catpaw/skills/mega-hook-split/SKILL.md` — React hook refactoring rules
+- `.catpaw/skills/backend-java-pattern/SKILL.md` — Java backend patterns
+- `.catpaw/skills/financial-domain/SKILL.md` — Financial domain knowledge
+- `.catpaw/skills/ai-chat-system-prompt/SKILL.md` — AI chat & SSE streaming
+- `.catpaw/skills/deployment-env/SKILL.md` — Deployment & environment config
+
+Quick reference versions are also in `.cursor/rules/` for Cursor IDE.
