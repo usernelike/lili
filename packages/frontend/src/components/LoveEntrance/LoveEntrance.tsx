@@ -287,6 +287,7 @@ export default function LoveEntrance({ onComplete }: { onComplete: () => void })
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
+        overflow: 'hidden',
         transition: `opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)`,
         opacity,
       }}

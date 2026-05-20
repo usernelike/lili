@@ -62,7 +62,7 @@ export default function HorizontalScroll({ children }: HorizontalScrollProps) {
   }, [isMobile])
 
   if (isMobile) {
-    return <div style={{ display: 'flex', flexDirection: 'column' }}>{children}</div>
+    return <div style={{ display: 'flex', flexDirection: 'column', width: '100%', overflowX: 'hidden' }}>{children}</div>
   }
 
   return (

@@ -25,9 +25,9 @@ export default function Home() {
   }, [])
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%', overflowX: 'hidden' }}>
       <ParticleBackground />
-      <div style={{ position: 'relative', zIndex: 2 }}>
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', overflowX: 'hidden' }}>
         <HorizontalScroll>
           <HeroSection />
           <DataSourcesSection />

@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import MainLayout from './components/Layout/MainLayout'
 import ScrollToTop from './components/ScrollToTop/ScrollToTop'
-import LoveEntrance, { isLoveDay } from './components/LoveEntrance/LoveEntrance'
 import Home from './pages/Home'
 import EnterpriseQuery from './pages/EnterpriseQuery'
 import FinancialData from './pages/FinancialData'
@@ -32,13 +30,8 @@ function RequireGuest({ children }: { children: JSX.Element }) {
 }
 
 function App() {
-  const [showLoveEntrance, setShowLoveEntrance] = useState(isLoveDay())
-
-  const handleEntranceComplete = () => setShowLoveEntrance(false)
-
   return (
     <>
-      {showLoveEntrance && <LoveEntrance onComplete={handleEntranceComplete} />}
       <ScrollToTop />
       <Routes>
         <Route path="/login" element={<RequireGuest><LoginPage /></RequireGuest>} />
