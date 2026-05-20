@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { MessageSquare, X, Send, Bot, User, Loader2 } from 'lucide-react'
+import { MessageSquare, X, Send, Bot, User, Loader2, ChevronDown, ChevronUp, Brain } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 import { useNavigate } from 'react-router-dom'
 import { useMobile } from '../hooks/useMobile'
@@ -8,6 +8,7 @@ interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   id: string
+  thinking?: string
 }
 
 function parseContent(text: string, navigate: (path: string) => void): React.ReactNode {
@@ -58,8 +59,12 @@ export default function FloatingAIChat() {
   ])
   const [inputValue, setInputValue] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const [expandedThinking, setExpandedThinking] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatWindowRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  // Track whether user has manually scrolled up (auto-scroll is paused)
+  const userScrolledUpRef = useRef(false)
 
   // Check login
   const [hasToken, setHasToken] = useState(false)
@@ -74,10 +79,38 @@ export default function FloatingAIChat() {
     }
   }, [])
 
-  // Scroll to bottom
+  // Smart scroll: auto-scroll when streaming, pause on user scroll-up, resume at bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (!messagesContainerRef.current) return
+    const container = messagesContainerRef.current
+    const { scrollTop, scrollHeight, clientHeight } = container
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 30
+
+    if (isAtBottom || !userScrolledUpRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages])
+
+  // Listen for user scroll events to detect manual scroll-up
+  useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    let ticking = false
+    const handleScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const { scrollTop, scrollHeight, clientHeight } = container
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+        userScrolledUpRef.current = distanceFromBottom > 50
+        ticking = false
+      })
+    }
+
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [])
 
 
 
@@ -97,7 +130,7 @@ export default function FloatingAIChat() {
     setIsStreaming(true)
 
     // Add placeholder for assistant
-    setMessages((prev) => [...prev, { role: 'assistant', content: '', id: assistantId }])
+    setMessages((prev) => [...prev, { role: 'assistant', content: '', id: assistantId, thinking: '' }])
 
     try {
       const history = messages.map((m) => ({ role: m.role, content: m.content }))
@@ -139,6 +172,7 @@ export default function FloatingAIChat() {
         buffer = lines.pop() || ''
 
         let contentDelta = ''
+        let thinkingDelta = ''
         for (const line of lines) {
           const trimmed = line.trim()
           if (!trimmed.startsWith('data: ')) continue
@@ -147,20 +181,40 @@ export default function FloatingAIChat() {
 
           try {
             const parsed = JSON.parse(data)
-            const delta = parsed.choices?.[0]?.delta?.content
-            if (delta) {
-              contentDelta += delta
+            const delta = parsed.choices?.[0]?.delta
+            // Kimi API thinking/reasoning content
+            const reasoningContent = delta?.reasoning_content || delta?.reasoning || delta?.thinking
+            if (reasoningContent) {
+              thinkingDelta += reasoningContent
+            }
+            // Actual response content
+            if (delta?.content) {
+              contentDelta += delta.content
             }
           } catch {
             // ignore parse error
           }
         }
 
-        if (contentDelta) {
+        if (contentDelta || thinkingDelta) {
           setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId ? { ...m, content: m.content + contentDelta } : m
-            )
+            prev.map((m) => {
+              if (m.id !== assistantId) return m
+              const updated = {
+                ...m,
+                content: m.content + contentDelta,
+                thinking: (m.thinking || '') + thinkingDelta,
+              }
+              // Auto-expand thinking when first receiving thinking content
+              if (thinkingDelta && !m.thinking) {
+                setExpandedThinking((prevSet) => {
+                  const next = new Set(prevSet)
+                  next.add(assistantId)
+                  return next
+                })
+              }
+              return updated
+            })
           )
         }
       }
@@ -172,6 +226,18 @@ export default function FloatingAIChat() {
       )
     } finally {
       setIsStreaming(false)
+      // Auto-collapse thinking block when streaming ends
+      setMessages((prev) => {
+        const lastMsg = prev[prev.length - 1]
+        if (lastMsg?.id === assistantId && lastMsg.thinking) {
+          setExpandedThinking((prevSet) => {
+            const next = new Set(prevSet)
+            next.delete(assistantId)
+            return next
+          })
+        }
+        return prev
+      })
     }
   }
 
@@ -264,6 +330,7 @@ export default function FloatingAIChat() {
 
           {/* Messages */}
           <div
+            ref={messagesContainerRef}
             style={{
               flex: 1,
               overflowY: 'auto',
@@ -274,55 +341,116 @@ export default function FloatingAIChat() {
               maxHeight: isMobile ? 'none' : 400,
             }}
           >
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'flex-start',
-                  flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-                }}
-              >
+            {messages.map((msg) => {
+              const isThinkingExpanded = expandedThinking.has(msg.id)
+
+              return (
                 <div
+                  key={msg.id}
                   style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: '50%',
-                    background: msg.role === 'user' ? 'var(--accent-cyan)' : 'rgba(124,58,237,0.3)',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
+                    gap: 10,
+                    alignItems: 'flex-start',
+                    flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
                   }}
                 >
-                  {msg.role === 'user' ? (
-                    <User size={14} color="#fff" />
-                  ) : (
-                    <Bot size={14} color="#fff" />
-                  )}
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      background: msg.role === 'user' ? 'var(--accent-cyan)' : 'rgba(124,58,237,0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {msg.role === 'user' ? (
+                      <User size={14} color="#fff" />
+                    ) : (
+                      <Bot size={14} color="#fff" />
+                    )}
+                  </div>
+                  <div style={{ maxWidth: isMobile ? '75%' : '80%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {/* Thinking / Reasoning block - collapsible */}
+                    {msg.role === 'assistant' && msg.thinking && (
+                      <div
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: 10,
+                          background: 'rgba(168, 85, 247, 0.08)',
+                          border: '1px solid rgba(168, 85, 247, 0.15)',
+                        }}
+                      >
+                        <button
+                          onClick={() => {
+                            const next = new Set(expandedThinking)
+                            if (isThinkingExpanded) next.delete(msg.id)
+                            else next.add(msg.id)
+                            setExpandedThinking(next)
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-secondary, #888)',
+                            fontSize: 12,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: 0,
+                            fontFamily: 'inherit',
+                            width: 'fit-content',
+                          }}
+                        >
+                          <Brain size={13} style={{ color: '#a855f7' }} />
+                          {isStreaming && !msg.content ? '正在思考...' : '思考过程'}
+                          {isThinkingExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </button>
+                        {isThinkingExpanded && (
+                          <div
+                            style={{
+                              marginTop: 6,
+                              fontSize: 12,
+                              lineHeight: 1.7,
+                              color: 'var(--text-secondary, #999)',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                              maxHeight: 200,
+                              overflowY: 'auto',
+                            }}
+                          >
+                            {msg.thinking}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* Main content bubble — hide when empty during streaming (show only thinking) */}
+                    {(msg.role === 'user' || msg.content) && (
+                      <div
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: 12,
+                          background: msg.role === 'user' ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.05)',
+                          color: 'var(--text-primary)',
+                          fontSize: 13,
+                          lineHeight: 1.6,
+                          wordBreak: 'break-word',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {parseContent(msg.content, navigate)}
+                      </div>
+                    )}
+                    {/* Show loading spinner only when no thinking and no content yet */}
+                    {msg.role === 'assistant' && msg.content === '' && !msg.thinking && isStreaming && (
+                      <Loader2 size={14} color="var(--accent-cyan)" className="spin" />
+                    )}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: 12,
-                    background: msg.role === 'user' ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: 'var(--text-primary)',
-                    fontSize: 13,
-                    lineHeight: 1.6,
-                    maxWidth: isMobile ? '75%' : '80%',
-                    wordBreak: 'break-word',
-                    whiteSpace: 'pre-wrap',
-                  }}
-                >
-                  {msg.role === 'assistant' && msg.content === '' && isStreaming ? (
-                    <Loader2 size={14} color="var(--accent-cyan)" className="spin" />
-                  ) : (
-                    parseContent(msg.content, navigate)
-                  )}
-                </div>
-              </div>
-            ))}
+              )
+            })}
             <div ref={messagesEndRef} />
           </div>
 
