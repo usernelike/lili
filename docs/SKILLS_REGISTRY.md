@@ -29,6 +29,7 @@
 | 6 | **deploy-guide** | `.catpaw/skills/deploy-guide/` | 部署流程指南 | 本地环境搭建、上线部署时 |
 | 7 | **ai-chat-system-prompt** | `.catpaw/skills/ai-chat-system-prompt/` | AI 助手 Prompt 管理 | 改 AI 聊天功能、新增页面时 |
 | 8 | **java-backend-pattern** | `.catpaw/skills/java-backend-pattern/` | Java 后端开发模式 | 写 Java Controller/Service 时 |
+| 9 | **karpathy-guidelines** | `.catpaw/skills/karpathy-guidelines/` | AI 编码行为准则（通用） | 所有编码、审查、重构任务 |
 
 ---
 
@@ -197,14 +198,35 @@
 
 ---
 
+### 9. karpathy-guidelines — AI 编码行为准则（Karpathy 四原则）
+
+**解决什么问题：** LLM 编码时容易犯的通用错误：错误假设、过度工程、无关修改、缺乏验证标准。源自 Andrej Karpathy 对 LLM 编码陷阱的经典观察。
+
+**包含内容：**
+- **原则 1：编码前思考** — 明确假设、呈现权衡、困惑时停下来询问
+- **原则 2：简洁优先** — 最少代码解决问题，反过度工程（含反模式对照表）
+- **原则 3：精准修改** — 只碰必须碰的代码，不"顺手改进"相邻代码
+- **原则 4：目标驱动执行** — 将指令转化为可验证目标 + 成功标准循环
+- 与项目其他 Skill 的协作流程示例
+- 生效标志自检清单
+
+**与其他 Skill 的关系：**
+- 本 Skill 是**思维层**（怎么思考），其他 Skill 是**技术层**（用什么格式/API）
+- 使用顺序：先遵循本准则 → 再参考具体技术规范 → 最后用 code-review-audit 检查
+
+**来源：** [andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) (MIT License)
+
+---
+
 ## 如何使用
 
 ### 自动触发
 CatPaw 会根据你的操作自动加载相关 Skill：
+- **任何编码任务** → 自动加载 `karpathy-guidelines`（通用行为准则，优先级最高）
 - 写前端组件 → 自动加载 `frontend-component`
 - 写 API 接口 → 自动加载 `api-convention` + `java-backend-pattern`
 - 改股票数据 → 自动加载 `stock-data-parser`
-- Review PR → 自动加载 `code-review-audit`
+- Review PR → 自动加载 `code-review-audit` + `karpathy-guidelines`
 
 ### 手动引用
 你可以在对话中直接要求：
@@ -331,3 +353,4 @@ cp -r .catpaw/skills/* ~/.catpaw/skills/
 |------|------|------|
 | 2026-05-19 | 初始创建 | 8 个 Skill 全部创建完成 |
 | 2026-05-19 | 跨环境适配 | 创建 Cursor Rules / .cursorrules，更新文档 |
+| 2026-05-20 | 新增 karpathy-guidelines | 集成 Karpathy AI 编码四原则（通用行为准则），支持 CatPaw/Cursor/Claude Code/终端 AI |

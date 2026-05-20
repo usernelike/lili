@@ -12,5 +12,9 @@ Each skill contains domain-specific rules in `SKILL.md` format.
 - `.catpaw/skills/financial-domain/SKILL.md` — Financial domain knowledge
 - `.catpaw/skills/ai-chat-system-prompt/SKILL.md` — AI chat & SSE streaming
 - `.catpaw/skills/deployment-env/SKILL.md` — Deployment & environment config
+- `.catpaw/skills/karpathy-guidelines/SKILL.md` — **AI 编码行为准则（Karpathy 四原则）** — 所有编码任务通用
+
+### 🌟 通用行为准则（优先级最高）
+- **`.catpaw/skills/karpathy-guidelines/SKILL.md`** — Karpathy AI 编码四原则：编码前思考、简洁优先、精准修改、目标驱动执行。适用于所有编码场景，是其他 Skill 的思维基础。
 
 Quick reference versions are also in `.cursor/rules/` for Cursor IDE.
