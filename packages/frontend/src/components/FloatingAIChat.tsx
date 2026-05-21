@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageSquare, X, Send, Bot, User, Loader2, ChevronDown, ChevronUp, Brain } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 import { useNavigate } from 'react-router-dom'
@@ -9,6 +9,9 @@ interface ChatMessage {
   content: string
   id: string
   thinking?: string
+  // Buffered content for typewriter effect (what's actually displayed)
+  displayedContent?: string
+  displayedThinking?: string
 }
 
 function parseContent(text: string, navigate: (path: string) => void): React.ReactNode {
@@ -46,6 +49,24 @@ function parseContent(text: string, navigate: (path: string) => void): React.Rea
   return parts.length === 1 && typeof parts[0] === 'string' ? parts[0] : parts
 }
 
+// Typewriter cursor component
+function TypewriterCursor({ active }: { active: boolean }) {
+  if (!active) return null
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        width: 2,
+        height: '1em',
+        background: 'var(--accent-cyan, #00d4ff)',
+        marginLeft: 1,
+        verticalAlign: 'text-bottom',
+        animation: 'blink 1s step-end infinite',
+      }}
+    />
+  )
+}
+
 export default function FloatingAIChat() {
   const navigate = useNavigate()
   const isMobile = useMobile()
@@ -55,6 +76,7 @@ export default function FloatingAIChat() {
       role: 'assistant',
       content: '你好！我是 lili Hub 的 AI 助手，可以帮你快速了解平台功能、定位页面。请问有什么可以帮你的？',
       id: 'welcome',
+      displayedContent: '你好！我是 lili Hub 的 AI 助手，可以帮你快速了解平台功能、定位页面。请问有什么可以帮你的？',
     },
   ])
   const [inputValue, setInputValue] = useState('')
@@ -63,8 +85,15 @@ export default function FloatingAIChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatWindowRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-  // Track whether user has manually scrolled up (auto-scroll is paused)
+
+  // Scroll control refs
   const userScrolledUpRef = useRef(false)
+  // Track the last scroll height to detect new content
+  const lastScrollHeightRef = useRef(0)
+  // Ref for streaming message ID (to know which msg is actively streaming)
+  const streamingMsgIdRef = useRef<string | null>(null)
+  // Typewriter animation frame ref
+  const typewriterFrameRef = useRef<number | null>(null)
 
   // Check login
   const [hasToken, setHasToken] = useState(false)
@@ -79,19 +108,35 @@ export default function FloatingAIChat() {
     }
   }, [])
 
-  // Smart scroll: auto-scroll when streaming, pause on user scroll-up, resume at bottom
+  // --- Smart Scroll Logic ---
+  // Threshold: if user is within this many px of bottom, consider them "at bottom"
+  const SCROLL_BOTTOM_THRESHOLD = 80
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior })
+  }, [])
+
+  // Auto-scroll when messages change (new content arriving during stream)
   useEffect(() => {
     if (!messagesContainerRef.current) return
     const container = messagesContainerRef.current
     const { scrollTop, scrollHeight, clientHeight } = container
-    const isAtBottom = scrollHeight - scrollTop - clientHeight < 30
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight
 
-    if (isAtBottom || !userScrolledUpRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    lastScrollHeightRef.current = scrollHeight
+
+    // Only auto-scroll if user is at/near bottom — never steal scroll from user
+    if (distanceFromBottom <= SCROLL_BOTTOM_THRESHOLD) {
+      scrollToBottom('smooth')
     }
-  }, [messages])
+    // If user hasn't manually scrolled up at all (first message, new conversation),
+    // also scroll to bottom
+    else if (!userScrolledUpRef.current) {
+      scrollToBottom('instant')
+    }
+  }, [messages, scrollToBottom])
 
-  // Listen for user scroll events to detect manual scroll-up
+  // Listen for user scroll events
   useEffect(() => {
     const container = messagesContainerRef.current
     if (!container) return
@@ -103,7 +148,8 @@ export default function FloatingAIChat() {
       requestAnimationFrame(() => {
         const { scrollTop, scrollHeight, clientHeight } = container
         const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-        userScrolledUpRef.current = distanceFromBottom > 50
+        // User is considered "scrolled up" if they're beyond the threshold from bottom
+        userScrolledUpRef.current = distanceFromBottom > SCROLL_BOTTOM_THRESHOLD
         ticking = false
       })
     }
@@ -112,9 +158,106 @@ export default function FloatingAIChat() {
     return () => container.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Reset scroll state when opening chat
+  useEffect(() => {
+    if (isOpen) {
+      userScrolledUpRef.current = false
+      // Small delay to let DOM render, then scroll to bottom
+      requestAnimationFrame(() => {
+        scrollToBottom('instant')
+      })
+    }
+  }, [isOpen, scrollToBottom])
 
+  // --- Typewriter Effect ---
+  // Runs on rAF tick to gradually reveal buffered content
+  useEffect(() => {
+    const tick = () => {
+      setMessages((prev) => {
+        const updated = prev.map((msg) => {
+          // Only apply typewriter to the currently streaming assistant message
+          if (msg.id !== streamingMsgIdRef.current || msg.role !== 'assistant') return msg
 
-  // Send message
+          const rawContent = msg.content || ''
+          const rawThinking = msg.thinking || ''
+          const currentDisplayedContent = msg.displayedContent || ''
+          const currentDisplayedThinking = msg.displayedThinking || ''
+
+          // Check if there's unrevealed content or thinking
+          const contentRemaining = rawContent.length - currentDisplayedContent.length
+          const thinkingRemaining = rawThinking.length - currentDisplayedThinking.length
+
+          if (contentRemaining <= 0 && thinkingRemaining <= 0) return msg
+
+          // Adaptive speed: more remaining chars → faster typing
+          // Base speed ~30ms per char, but scales down with backlog
+          const totalRemaining = contentRemaining + thinkingRemaining
+          let charsToReveal: number
+
+          if (totalRemaining > 200) {
+            // Large backlog: reveal in bigger chunks (fast mode)
+            charsToReveal = Math.max(Math.floor(totalRemaining / 20), 8)
+          } else if (totalRemaining > 50) {
+            // Medium backlog: moderate speed
+            charsToReveal = Math.max(Math.floor(totalRemaining / 30), 3)
+          } else {
+            // Small amount: one char at a time for smooth effect
+            charsToReveal = 1
+          }
+
+          let newDisplayedContent = currentDisplayedContent
+          let newDisplayedThinking = currentDisplayedThinking
+
+          // Prioritize revealing thinking first, then content
+          if (thinkingRemaining > 0) {
+            const revealCount = Math.min(charsToReveal, thinkingRemaining)
+            newDisplayedThinking = rawThinking.slice(0, currentDisplayedThinking.length + revealCount)
+          } else if (contentRemaining > 0) {
+            const revealCount = Math.min(charsToReveal, contentRemaining)
+            newDisplayedContent = rawContent.slice(0, currentDisplayedContent.length + revealCount)
+          }
+
+          return {
+            ...msg,
+            displayedContent: newDisplayedContent,
+            displayedThinking: newDisplayedThinking,
+          }
+        })
+
+        return updated
+      })
+
+      typewriterFrameRef.current = requestAnimationFrame(tick)
+    }
+
+    // Only run typewriter while streaming
+    if (isStreaming) {
+      typewriterFrameRef.current = requestAnimationFrame(tick)
+    }
+
+    return () => {
+      if (typewriterFrameRef.current) {
+        cancelAnimationFrame(typewriterFrameRef.current)
+        typewriterFrameRef.current = null
+      }
+    }
+  }, [isStreaming])
+
+  // When streaming ends, instantly reveal all remaining buffered content
+  useEffect(() => {
+    if (!isStreaming) {
+      setMessages((prev) =>
+        prev.map((msg) => ({
+          ...msg,
+          displayedContent: msg.content,
+          displayedThinking: msg.thinking,
+        }))
+      )
+      streamingMsgIdRef.current = null
+    }
+  }, [isStreaming])
+
+  // --- Send Message ---
   const sendMessage = async () => {
     if (!inputValue.trim() || isStreaming) return
 
@@ -124,13 +267,15 @@ export default function FloatingAIChat() {
       id: Date.now().toString(),
     }
     const assistantId = (Date.now() + 1).toString()
+    streamingMsgIdRef.current = assistantId
 
     setMessages((prev) => [...prev, userMsg])
     setInputValue('')
     setIsStreaming(true)
+    userScrolledUpRef.current = false // Reset scroll lock on new message
 
     // Add placeholder for assistant
-    setMessages((prev) => [...prev, { role: 'assistant', content: '', id: assistantId, thinking: '' }])
+    setMessages((prev) => [...prev, { role: 'assistant', content: '', id: assistantId, thinking: '', displayedContent: '', displayedThinking: '' }])
 
     try {
       const history = messages.map((m) => ({ role: m.role, content: m.content }))
@@ -144,8 +289,9 @@ export default function FloatingAIChat() {
 
       if (!res.ok) {
         const errorText = await res.text()
+        const errorContent = '请求失败 (' + res.status + '): ' + errorText
         setMessages((prev) =>
-          prev.map((m) => (m.id === assistantId ? { ...m, content: '请求失败 (' + res.status + '): ' + errorText } : m))
+          prev.map((m) => (m.id === assistantId ? { ...m, content: errorContent, displayedContent: errorContent } : m))
         )
         setIsStreaming(false)
         return
@@ -156,8 +302,9 @@ export default function FloatingAIChat() {
       let buffer = ''
 
       if (!reader) {
+        const errContent = '连接失败，请重试'
         setMessages((prev) =>
-          prev.map((m) => (m.id === assistantId ? { ...m, content: '连接失败，请重试' } : m))
+          prev.map((m) => (m.id === assistantId ? { ...m, content: errContent, displayedContent: errContent } : m))
         )
         setIsStreaming(false)
         return
@@ -219,9 +366,10 @@ export default function FloatingAIChat() {
         }
       }
     } catch (err) {
+      const errorContent = '请求失败: ' + (err as Error).message
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === assistantId ? { ...m, content: '请求失败: ' + (err as Error).message } : m
+          m.id === assistantId ? { ...m, content: errorContent, displayedContent: errorContent } : m
         )
       )
     } finally {
@@ -245,7 +393,15 @@ export default function FloatingAIChat() {
 
   return (
     <>
-      {/* Floating Button - H5 全屏打开时隐藏，避免遮挡输入区发送按钮 */}
+      {/* CSS keyframe for cursor blink */}
+      <style>{`
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+      `}</style>
+
+      {/* Floating Button */}
       {!(isMobile && isOpen) && (
         <div
           onClick={() => setIsOpen(!isOpen)}
@@ -343,6 +499,11 @@ export default function FloatingAIChat() {
           >
             {messages.map((msg) => {
               const isThinkingExpanded = expandedThinking.has(msg.id)
+              const isCurrentlyStreaming = msg.id === streamingMsgIdRef.current && isStreaming
+              // Use displayed versions for rendering (typewriter effect)
+              const renderContent = msg.displayedContent ?? msg.content
+              const renderThinking = msg.displayedThinking ?? msg.thinking
+              const hasContentToShow = msg.role === 'user' || renderContent
 
               return (
                 <div
@@ -373,8 +534,8 @@ export default function FloatingAIChat() {
                     )}
                   </div>
                   <div style={{ maxWidth: isMobile ? '75%' : '80%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {/* Thinking / Reasoning block - collapsible */}
-                    {msg.role === 'assistant' && msg.thinking && (
+                    {/* Thinking block */}
+                    {msg.role === 'assistant' && renderThinking && (
                       <div
                         style={{
                           padding: '8px 12px',
@@ -405,11 +566,19 @@ export default function FloatingAIChat() {
                           }}
                         >
                           <Brain size={13} style={{ color: '#a855f7' }} />
-                          {isStreaming && !msg.content ? '正在思考...' : '思考过程'}
+                          {isCurrentlyStreaming && !renderContent ? '正在思考...' : '思考过程'}
                           {isThinkingExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         </button>
-                        {isThinkingExpanded && (
+                        {(isThinkingExpanded || isCurrentlyStreaming) && (
                           <div
+                            ref={isCurrentlyStreaming ? (el: HTMLDivElement | null) => {
+                              if (el) {
+                                // Auto-scroll thinking area to bottom during streaming
+                                requestAnimationFrame(() => {
+                                  el.scrollTop = el.scrollHeight
+                                })
+                              }
+                            } : undefined}
                             style={{
                               marginTop: 6,
                               fontSize: 12,
@@ -417,17 +586,19 @@ export default function FloatingAIChat() {
                               color: 'var(--text-secondary, #999)',
                               whiteSpace: 'pre-wrap',
                               wordBreak: 'break-word',
-                              maxHeight: 200,
+                              maxHeight: isCurrentlyStreaming ? Math.min(300, window.innerHeight * 0.3) : 200,
                               overflowY: 'auto',
                             }}
                           >
-                            {msg.thinking}
+                            {renderThinking}
+                            <TypewriterCursor active={isCurrentlyStreaming && (msg.thinking ?? '').length > (renderThinking.length)} />
                           </div>
                         )}
                       </div>
                     )}
-                    {/* Main content bubble — hide when empty during streaming (show only thinking) */}
-                    {(msg.role === 'user' || msg.content) && (
+
+                    {/* Main content bubble — hidden when empty during streaming */}
+                    {hasContentToShow && (
                       <div
                         style={{
                           padding: '10px 14px',
@@ -440,11 +611,13 @@ export default function FloatingAIChat() {
                           whiteSpace: 'pre-wrap',
                         }}
                       >
-                        {parseContent(msg.content, navigate)}
+                        {parseContent(renderContent, navigate)}
+                        <TypewriterCursor active={isCurrentlyStreaming && (msg.content ?? '').length > (renderContent.length)} />
                       </div>
                     )}
+
                     {/* Show loading spinner only when no thinking and no content yet */}
-                    {msg.role === 'assistant' && msg.content === '' && !msg.thinking && isStreaming && (
+                    {msg.role === 'assistant' && !renderThinking && !renderContent && isStreaming && (
                       <Loader2 size={14} color="var(--accent-cyan)" className="spin" />
                     )}
                   </div>
@@ -470,7 +643,7 @@ export default function FloatingAIChat() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === 'Enter' && !shiftKey(e)) {
                   e.preventDefault()
                   sendMessage()
                 }
@@ -511,4 +684,9 @@ export default function FloatingAIChat() {
       )}
     </>
   )
+}
+
+// Helper: detect Shift key (for multiline input support later)
+function shiftKey(e: React.KeyboardEvent): boolean {
+  return e.shiftKey
 }
