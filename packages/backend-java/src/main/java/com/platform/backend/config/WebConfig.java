@@ -37,7 +37,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addViewController("/").setViewName("forward:/index.html");
         // SPA fallback: explicit frontend routes (NEVER use wildcards that match /api/**)
         // If you add a new frontend route, add it here too
-        String[] spaRoutes = {"/login", "/register", "/financial", "/interview", "/enterprise", "/lili", "/stock/**"};
+        String[] spaRoutes = {"/login", "/register", "/financial", "/interview", "/enterprise", "/lili", "/stock/**", "/worldcup/**", "/divination"};
         for (String route : spaRoutes) {
             registry.addViewController(route).setViewName("forward:/index.html");
         }
