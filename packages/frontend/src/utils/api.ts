@@ -18,6 +18,11 @@ export function apiFetch(url: string, options: RequestInit = {}) {
       clearTimeout(timeoutId)
       if (res.status === 401) {
         localStorage.removeItem('token')
+        // 保存当前页面路径，登录成功后跳转回来
+        const currentPath = window.location.pathname + window.location.search
+        if (currentPath !== '/login' && currentPath !== '/register') {
+          sessionStorage.setItem('redirectAfterLogin', currentPath)
+        }
         window.location.href = '/login'
       }
       return res

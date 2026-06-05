@@ -1,12 +1,17 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { AnimatedCharacters } from '../components/AnimatedCharacters'
 import { Eye, EyeOff } from 'lucide-react'
 import { useMobile } from '../hooks/useMobile'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const isMobile = useMobile()
+  // 获取登录前访问的页面路径（优先从 Router state 读取，其次是 sessionStorage）
+  const from = (location.state as { from?: string })?.from
+    || sessionStorage.getItem('redirectAfterLogin')
+    || '/'
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -33,7 +38,8 @@ export default function LoginPage() {
       const json = await res.json()
       if (json.success && json.data?.token) {
         localStorage.setItem('token', json.data.token)
-        navigate('/')
+        sessionStorage.removeItem('redirectAfterLogin')
+        navigate(from, { replace: true })
       } else {
         setError(json.message || '登录失败')
       }

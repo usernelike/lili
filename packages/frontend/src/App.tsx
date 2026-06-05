@@ -11,6 +11,7 @@ import StockDetail from './pages/StockDetail'
 import InterviewKnowledgeBase from './pages/InterviewKnowledgeBase'
 import WorldCup from './pages/WorldCup/WorldCup'
 import WorldCupTeamDetail from './pages/WorldCup/WorldCupTeamDetail'
+import Divination from './pages/Divination'
 import Legal from './pages/Legal'
 import NotFound from './pages/NotFound'
 import LoginPage from './pages/LoginPage'
@@ -55,6 +56,7 @@ function App() {
           <Route path="legal" element={<RequireAuth><Legal /></RequireAuth>} />
           <Route path="worldcup" element={<WorldCup />} />
           <Route path="worldcup/team/:teamId" element={<WorldCupTeamDetail />} />
+          <Route path="divination" element={<RequireAuth><Divination /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Route>
         {/* 兜底：未匹配任何路由时显示 404（如 /login/abc 等） */}

@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { BarChart3, Building2, Home, Database, BookOpen, LogOut, User, Menu, X, Trophy } from 'lucide-react'
+import { BarChart3, Building2, Home, Database, BookOpen, LogOut, User, Menu, X, Trophy, Sparkles } from 'lucide-react'
 import FloatingAIChat from '../FloatingAIChat'
 import { useMobile } from '../../hooks/useMobile'
 
@@ -11,6 +11,7 @@ const navItems = [
   { path: '/lili', label: 'lili数据源', icon: Database },
   { path: '/interview', label: '面试知识库', icon: BookOpen },
   { path: '/worldcup', label: '世界杯预测', icon: Trophy },
+  { path: '/divination', label: 'AI占卜', icon: Sparkles },
 ]
 
 export default function MainLayout() {
